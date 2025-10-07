@@ -72,18 +72,25 @@ export default function DoctorsPage() {
       if (specialtyFilter) params.append('specialty', specialtyFilter);
       params.append('limit', '100'); // Get more doctors
 
+      console.log('Fetching doctors with params:', params.toString());
       const response = await fetch(`/api/doctors?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log('Doctors API response status:', response.status);
       const data = await response.json();
+      console.log('Doctors API response data:', data);
+      
       if (data.success) {
+        console.log('Setting doctors:', data.data.doctors?.length || 0, 'doctors');
         setDoctors(data.data.doctors || []);
       } else {
         console.error('Failed to fetch doctors:', data);
+        alert(`Failed to load doctors: ${data.error?.message || data.message || 'Unknown error'}`);
         setDoctors([]);
       }
     } catch (error) {
       console.error('Error fetching doctors:', error);
+      alert(`Error loading doctors: ${error}`);
       setDoctors([]);
     } finally {
       setLoading(false);
