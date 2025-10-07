@@ -2,7 +2,6 @@ import { NextRequest } from 'next/server';
 import { authMiddleware } from '@/lib/auth/middleware';
 import { connectDB } from '@/lib/db/connection';
 import User from '@/lib/models/User';
-import District from '@/lib/models/District';
 import { successResponse, errorResponse } from '@/lib/utils/response';
 import bcrypt from 'bcryptjs';
 

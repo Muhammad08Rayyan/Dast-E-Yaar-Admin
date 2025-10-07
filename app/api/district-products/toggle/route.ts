@@ -3,7 +3,6 @@ import { authMiddleware } from '@/lib/auth/middleware';
 import { connectDB } from '@/lib/db/connection';
 import DistrictProduct from '@/lib/models/DistrictProduct';
 import Product from '@/lib/models/Product';
-import District from '@/lib/models/District';
 import { successResponse, errorResponse } from '@/lib/utils/response';
 import mongoose from 'mongoose';
 

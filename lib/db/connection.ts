@@ -28,24 +28,26 @@ if (!global.mongoose) {
 
 // Pre-load all models to prevent race conditions
 let modelsLoaded = false;
-function loadModels() {
+async function loadModels() {
   if (!modelsLoaded) {
     // Import all models to ensure they're registered
-    require('./models/District');
-    require('./models/User');
-    require('./models/Doctor');
-    require('./models/Product');
-    require('./models/DistrictProduct');
-    require('./models/Patient');
-    require('./models/Prescription');
-    require('./models/Order');
+    await Promise.all([
+      import('@/lib/models/District'),
+      import('@/lib/models/User'),
+      import('@/lib/models/Doctor'),
+      import('@/lib/models/Product'),
+      import('@/lib/models/DistrictProduct'),
+      import('@/lib/models/Patient'),
+      import('@/lib/models/Prescription'),
+      import('@/lib/models/Order'),
+    ]);
     modelsLoaded = true;
   }
 }
 
 async function connectDB() {
   if (cached.conn) {
-    loadModels(); // Ensure models are loaded even if connection is cached
+    await loadModels(); // Ensure models are loaded even if connection is cached
     return cached.conn;
   }
 
@@ -57,8 +59,8 @@ async function connectDB() {
       socketTimeoutMS: 45000,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      loadModels(); // Load models after connection
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then(async (mongoose) => {
+      await loadModels(); // Load models after connection
       return mongoose;
     });
   }
