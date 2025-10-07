@@ -23,6 +23,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     try {
       const userData = JSON.parse(userStr);
       setUser(userData);
+      
+      // Redirect KAM users away from dashboard to doctors page
+      if (userData.role === "kam" && window.location.pathname === "/dashboard") {
+        router.push("/doctors");
+        return;
+      }
     } catch {
       router.push("/login");
       return;
@@ -36,7 +42,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="flex h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="h-12 w-12 mx-auto mb-4 border-4 border-[#D32F2F] border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-black">Loading...</p>
         </div>
       </div>
     );

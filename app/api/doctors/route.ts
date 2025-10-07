@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { authMiddleware } from '@/lib/auth/middleware';
 import { connectDB } from '@/lib/db/connection';
 import Doctor from '@/lib/models/Doctor';
+import District from '@/lib/models/District';
 import { successResponse, errorResponse } from '@/lib/utils/response';
 import bcrypt from 'bcryptjs';
 
@@ -75,7 +76,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/doctors - Create new doctor
+// POST /api/doctors - Create new doctor (Admin only)
 export async function POST(request: NextRequest) {
   try {
     const authResult = await authMiddleware(request);
@@ -83,19 +84,15 @@ export async function POST(request: NextRequest) {
       return errorResponse(authResult.message, 401);
     }
 
+    // Only Super Admin can create doctors
+    if (authResult.user?.role !== 'super_admin') {
+      return errorResponse('Only Super Admin can create doctors', 403);
+    }
+
     await connectDB();
 
     const body = await request.json();
-    const { email, password, name, phone, pmdc_number, specialty } = body;
-    let district_id = body.district_id;
-
-    // KAM scoping: KAM can only create doctors in their own district
-    if (authResult.user?.role === 'kam') {
-      if (!authResult.user.assigned_district) {
-        return errorResponse('You are not assigned to any district', 403);
-      }
-      district_id = authResult.user.assigned_district.toString();
-    }
+    const { email, password, name, phone, district_id, pmdc_number, specialty } = body;
 
     // Validate required fields
     if (!email || !password || !name || !phone || !district_id || !pmdc_number || !specialty) {
@@ -108,17 +105,23 @@ export async function POST(request: NextRequest) {
       return errorResponse('Email already exists', 400);
     }
 
+    // Get the district to auto-assign KAM
+    const district = await District.findById(district_id);
+    if (!district) {
+      return errorResponse('District not found', 404);
+    }
+
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create doctor
+    // Create doctor with auto-assigned KAM from district
     const doctor = await Doctor.create({
       email: email.toLowerCase(),
       password: hashedPassword,
       name,
       phone,
       district_id,
-      kam_id: authResult.user?.role === 'kam' ? authResult.user.userId : null,
+      kam_id: district.kam_id || null, // Auto-assign KAM from district
       pmdc_number,
       specialty,
       status: 'active'

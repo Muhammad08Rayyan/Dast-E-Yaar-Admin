@@ -24,13 +24,14 @@ export function Sidebar({ userRole }: SidebarProps) {
   const pathname = usePathname();
 
   const navigation = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["super_admin", "kam"] },
+    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["super_admin"] },
     { name: "Districts", href: "/districts", icon: MapPin, roles: ["super_admin"] },
     { name: "KAMs", href: "/users", icon: Users, roles: ["super_admin"] },
-    { name: "Doctors", href: "/doctors", icon: UserCog, roles: ["kam"] },
-    { name: "Products", href: "/products", icon: Package, roles: ["kam"] },
-    { name: "Prescriptions", href: "/prescriptions", icon: FileText, roles: ["kam"] },
-    { name: "Orders", href: "/orders", icon: ShoppingCart, roles: ["kam"] },
+    { name: "Doctors", href: "/doctors", icon: UserCog, roles: ["super_admin", "kam"] },
+    { name: "Patients", href: "/patients", icon: Users, roles: ["super_admin"] },
+    { name: "Prescriptions", href: "/prescriptions", icon: FileText, roles: ["super_admin"] },
+    { name: "Orders", href: "/orders", icon: ShoppingCart, roles: ["super_admin"] },
+    { name: "Products", href: "/products", icon: Package, roles: ["super_admin"] },
   ];
 
   const filteredNavigation = navigation.filter((item) => item.roles.includes(userRole));
@@ -83,13 +84,15 @@ export function Sidebar({ userRole }: SidebarProps) {
 
       {/* Settings & Logout */}
       <div className="border-t border-gray-800 p-2 space-y-1">
-        <Link
-          href="/settings"
-          className="group flex items-center px-3 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-800 hover:text-white transition-colors"
-        >
-          <Settings className="mr-3 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-white" />
-          Settings
-        </Link>
+        {userRole === "super_admin" && (
+          <Link
+            href="/settings"
+            className="group flex items-center px-3 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-800 hover:text-white transition-colors"
+          >
+            <Settings className="mr-3 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-white" />
+            Settings
+          </Link>
+        )}
         <button
           onClick={() => {
             localStorage.removeItem("token");

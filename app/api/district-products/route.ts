@@ -4,6 +4,9 @@ import { connectDB } from '@/lib/db/connection';
 import DistrictProduct from '@/lib/models/DistrictProduct';
 import { successResponse, errorResponse } from '@/lib/utils/response';
 
+// DEPRECATED: District-product assignment feature has been removed.
+// All products are now available to all doctors regardless of district.
+// This endpoint is kept for backward compatibility but returns empty data.
 // GET /api/district-products - Get all district products for the KAM's district
 export async function GET(request: NextRequest) {
   try {

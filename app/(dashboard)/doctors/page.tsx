@@ -39,12 +39,20 @@ interface Doctor {
   created_at: string;
 }
 
+interface District {
+  _id: string;
+  name: string;
+  code: string;
+}
+
 export default function DoctorsPage() {
   const router = useRouter();
   const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState('');
+  const [currentUserRole, setCurrentUserRole] = useState<string>('');
   
   // Dialog states
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -60,9 +68,40 @@ export default function DoctorsPage() {
     phone: '',
     pmdc_number: '',
     specialty: '',
+    district_id: '',
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+
+  const fetchCurrentUser = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      if (data.success) {
+        setCurrentUserRole(data.data.role || '');
+      }
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+    }
+  }, []);
+
+  const fetchDistricts = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/districts?status=active&limit=100', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      if (data.success) {
+        setDistricts(data.data.districts || []);
+      }
+    } catch (error) {
+      console.error('Error fetching districts:', error);
+    }
+  }, []);
 
   const fetchDoctors = useCallback(async () => {
     try {
@@ -98,8 +137,10 @@ export default function DoctorsPage() {
   }, [search, specialtyFilter]);
 
   useEffect(() => {
+    fetchCurrentUser();
+    fetchDistricts();
     fetchDoctors();
-  }, [fetchDoctors]);
+  }, [fetchCurrentUser, fetchDistricts, fetchDoctors]);
 
   const handleCreate = () => {
     setFormData({
@@ -109,6 +150,7 @@ export default function DoctorsPage() {
       phone: '',
       pmdc_number: '',
       specialty: '',
+      district_id: '',
     });
     setFormErrors({});
     setIsCreateOpen(true);
@@ -123,6 +165,7 @@ export default function DoctorsPage() {
       phone: doctor.phone,
       pmdc_number: doctor.pmdc_number,
       specialty: doctor.specialty,
+      district_id: doctor.district_id._id,
     });
     setFormErrors({});
     setIsEditOpen(true);
@@ -141,6 +184,7 @@ export default function DoctorsPage() {
     if (!formData.phone.trim()) errors.phone = 'Phone is required';
     if (!formData.pmdc_number.trim()) errors.pmdc_number = 'PMDC number is required';
     if (!formData.specialty.trim()) errors.specialty = 'Specialty is required';
+    if (!formData.district_id) errors.district_id = 'District is required';
     
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -234,13 +278,17 @@ export default function DoctorsPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Doctor Management</h1>
-          <p className="text-gray-900">Manage doctors and their assignments</p>
+          <h1 className="text-2xl font-bold text-black">Doctor Management</h1>
+          <p className="text-black">
+            {currentUserRole === 'kam' ? 'View doctors in your district' : 'Manage doctors and their assignments'}
+          </p>
         </div>
-        <Button onClick={handleCreate}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Doctor
-        </Button>
+        {currentUserRole === 'super_admin' && (
+          <Button onClick={handleCreate}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Doctor
+          </Button>
+        )}
       </div>
 
       {/* Filters */}
@@ -248,7 +296,7 @@ export default function DoctorsPage() {
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black" />
               <Input
                 placeholder="Search doctors..."
                 value={search}
@@ -274,37 +322,37 @@ export default function DoctorsPage() {
         <CardContent className="p-0">
           {loading ? (
             <div className="p-8 text-center">
-              <p className="text-gray-900">Loading doctors...</p>
+              <p className="text-black">Loading doctors...</p>
             </div>
           ) : doctors.length === 0 ? (
             <div className="p-8 text-center">
-              <p className="text-gray-900">No doctors found</p>
+              <p className="text-black">No doctors found</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-gray-900">Name</TableHead>
-                  <TableHead className="text-gray-900">Email</TableHead>
-                  <TableHead className="text-gray-900">Phone</TableHead>
-                  <TableHead className="text-gray-900">PMDC</TableHead>
-                  <TableHead className="text-gray-900">Specialty</TableHead>
-                  <TableHead className="text-gray-900">Status</TableHead>
-                  <TableHead className="text-gray-900">Actions</TableHead>
+                  <TableHead className="text-black">Name</TableHead>
+                  <TableHead className="text-black">Email</TableHead>
+                  <TableHead className="text-black">Phone</TableHead>
+                  <TableHead className="text-black">PMDC</TableHead>
+                  <TableHead className="text-black">Specialty</TableHead>
+                  <TableHead className="text-black">Status</TableHead>
+                  <TableHead className="text-black">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {doctors.map((doctor) => (
                   <TableRow key={doctor._id}>
-                    <TableCell className="font-medium text-gray-900">{doctor.name}</TableCell>
-                    <TableCell className="text-gray-900">{doctor.email}</TableCell>
-                    <TableCell className="text-gray-900">{doctor.phone}</TableCell>
+                    <TableCell className="font-medium text-black">{doctor.name}</TableCell>
+                    <TableCell className="text-black">{doctor.email}</TableCell>
+                    <TableCell className="text-black">{doctor.phone}</TableCell>
                     <TableCell>
-                      <code className="bg-gray-100 px-2 py-1 rounded text-xs text-gray-900">
+                      <code className="bg-gray-100 px-2 py-1 rounded text-xs text-black">
                         {doctor.pmdc_number}
                       </code>
                     </TableCell>
-                    <TableCell className="text-gray-900">{doctor.specialty}</TableCell>
+                    <TableCell className="text-black">{doctor.specialty}</TableCell>
                     <TableCell>
                       <button
                         onClick={() => toggleStatus(doctor)}
@@ -324,20 +372,24 @@ export default function DoctorsPage() {
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(doctor)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(doctor)}
-                        >
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
+                        {currentUserRole === 'super_admin' && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEdit(doctor)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(doctor)}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -442,10 +494,20 @@ export default function DoctorsPage() {
                 </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
-                <p className="text-sm text-gray-900">
-                  <strong>Note:</strong> This doctor will be automatically assigned to your district and you will be their KAM.
-                </p>
+              <div>
+                <Label required>District</Label>
+                <Select
+                  value={formData.district_id}
+                  onChange={(e) => setFormData({ ...formData, district_id: e.target.value })}
+                >
+                  <option value="">Select District</option>
+                  {districts.map((district) => (
+                    <option key={district._id} value={district._id}>
+                      {district.name} ({district.code})
+                    </option>
+                  ))}
+                </Select>
+                {formErrors.district_id && <p className="text-red-500 text-sm mt-1">{formErrors.district_id}</p>}
               </div>
             </div>
 
@@ -458,6 +520,7 @@ export default function DoctorsPage() {
                   setIsEditOpen(false);
                 }}
                 disabled={submitting}
+                className="text-black"
               >
                 Cancel
               </Button>

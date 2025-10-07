@@ -9,8 +9,8 @@ A comprehensive Next.js admin portal for managing doctors, prescriptions, orders
 ## 🎯 Project Overview
 
 The Dast-e-Yaar Admin Portal is a web-based management system that enables:
-- **Super Admins**: Full system access and management
-- **Key Account Managers (KAMs)**: District-scoped access to manage doctors and track prescriptions/orders
+- **Super Admins**: Full system access and management (create/edit/delete all entities)
+- **Key Account Managers (KAMs)**: District-scoped read-only access to view doctors and track prescriptions/orders in their assigned districts
 
 ### Tech Stack
 - **Framework**: Next.js 15 (App Router)
@@ -158,118 +158,91 @@ Password: Kam@Lahore123
   - `PUT /api/districts/:id` - Update district (Super Admin)
   - `PATCH /api/districts/:id/status` - Toggle district status
 
-##### 2.3 Doctor Management
-- [x] Doctor list page (with KAM scoping)
-  - Super Admin: See all doctors
-  - KAM: See only doctors in assigned districts
+##### 2.3 Doctor Management (Updated Architecture)
+- [x] Doctor list page (with role-based access)
+  - **Super Admin**: See all doctors + can create/edit/delete
+  - **KAM**: See only doctors in assigned districts (READ-ONLY, cannot create/edit/delete)
   - Columns: Name, Email, Phone, PMDC, Specialty, District, Status
-  - Advanced filters (District, Status, Specialty)
+  - Advanced filters (Specialty)
   - Search by name, email, PMDC number
 
-- [x] Create doctor functionality
-  - Form fields: Name, Email, Phone, Password, PMDC Number, Specialty
-  - District selection (scoped by KAM's assigned districts)
-  - Auto-assign KAM based on district
+- [x] Create doctor functionality (SUPER ADMIN ONLY)
+  - Form fields: Name, Email, Phone, Password, PMDC Number, Specialty, District
+  - District selection (all active districts)
+  - **KAM auto-assigned based on selected district**
   - Form validation
+  - KAM cannot create doctors
 
-- [x] Edit doctor functionality
+- [x] Edit doctor functionality (SUPER ADMIN ONLY)
   - Update doctor details
-  - Change district (with KAM reassignment)
+  - Change district (**automatically updates KAM** based on new district)
   - Reset password option
   - Update status
+  - KAM cannot edit doctors
 
-- [x] Doctor details view
-  - Complete doctor profile
-  - Statistics (Total Prescriptions, Orders)
-  - Recent prescriptions list
-  - Performance metrics
+- [x] Delete doctor functionality (SUPER ADMIN ONLY)
+  - Delete with confirmation dialog
+  - KAM cannot delete doctors
 
-- [x] Doctor status management
+- [x] Doctor status management (SUPER ADMIN ONLY)
   - Activate/Deactivate doctors
   - Confirmation dialogs
   - Click to toggle status
 
 - [x] API Routes
-  - `GET /api/doctors` - List doctors (with KAM scoping)
-  - `POST /api/doctors` - Create doctor
+  - `GET /api/doctors` - List doctors (with KAM read-only scoping)
+  - `POST /api/doctors` - Create doctor (Super Admin only)
   - `GET /api/doctors/:id` - Get doctor details
-  - `PUT /api/doctors/:id` - Update doctor
-  - `PATCH /api/doctors/:id/status` - Toggle doctor status
-  - `GET /api/doctors/:id/stats` - Get doctor statistics
+  - `PUT /api/doctors/:id` - Update doctor (Super Admin only, auto-updates KAM)
+  - `DELETE /api/doctors/:id` - Delete doctor (Super Admin only)
 
----
-
-### 📦 **Phase 3: Product & Inventory Management** (PENDING)
-**Status**: 0% Complete | **Target Date**: TBD
-
-#### Planned Features:
-
-##### 3.1 Product Management (Super Admin Only)
-- [ ] Product list page
-  - All products with SKU, name, price, status
-  - Shopify product ID linkage
+##### 2.4 Product Management (Super Admin Only)
+- [x] Product list page (all fields displayed in table)
+  - Columns: Name, SKU, Description, Price, Status, Shopify Product ID, Shopify Variant ID, Actions
   - Search by name or SKU
-  - Filter by status
+  - All product details visible directly in table (no separate detail page needed)
+  - Horizontally scrollable for all columns
 
-- [ ] Create product functionality
-  - Form: Name, SKU, Description, Price
-  - Shopify product linking (dropdown from Shopify)
-  - Image upload
-  - Bulk import from Shopify
+- [x] Create product functionality
+  - Form: Name, SKU, Description, Price, Status
+  - Shopify Product ID and Variant ID fields for order integration
+  - Form validation (name, SKU, price required)
+  - SKU uniqueness validation
 
-- [ ] Edit product functionality
-  - Update product details
-  - Change price
-  - Update Shopify linkage
-  - Status management
+- [x] Edit product functionality
+  - Update all product details
+  - Change price, description, status
+  - Update Shopify Product/Variant IDs
+  - Pre-filled form with existing data
 
-- [ ] Product details view
-  - Complete product information
-  - Assigned districts list
-  - Usage statistics (prescriptions count)
-  - Shopify inventory sync
+- [x] Delete product functionality
+  - Delete with confirmation dialog
+  - Permanent deletion
 
-- [ ] API Routes
-  - `GET /api/products` - List all products
-  - `POST /api/products` - Create product (Super Admin)
-  - `GET /api/products/:id` - Get product details
-  - `PUT /api/products/:id` - Update product (Super Admin)
-  - `DELETE /api/products/:id` - Deactivate product (Super Admin)
-  - `GET /api/products/shopify` - Fetch products from Shopify
+- [x] API Routes
+  - `GET /api/products` - List all products ✅
+  - `POST /api/products` - Create product (Super Admin only) ✅
+  - `GET /api/products/:id` - Get product details ✅
+  - `PUT /api/products/:id` - Update product (Super Admin only) ✅
+  - `DELETE /api/products/:id` - Delete product (Super Admin only) ✅
+  - `POST /api/products/sync` - Sync from Shopify (exists, not in UI) ⚠️
 
-##### 3.2 Product-District Assignment (Team System)
-- [ ] District product assignment interface
-  - Visual grid: Districts (rows) × Products (columns)
-  - Checkbox selection for assignments
-  - Bulk assign/unassign
-  - Assignment history
-
-- [ ] Assignment management
-  - Assign multiple products to a district
-  - Assign one product to multiple districts
-  - Remove assignments
-  - Status toggle (active/inactive)
-
-- [ ] Assignment viewing
-  - View products assigned to each district
-  - View districts assigned to each product
-  - Filter by assignment status
-
-- [ ] API Routes
-  - `GET /api/district-products` - List all assignments
-  - `POST /api/district-products` - Create assignment (Super Admin)
-  - `DELETE /api/district-products/:id` - Remove assignment (Super Admin)
-  - `GET /api/district-products/district/:districtId` - Get products for district
-  - `GET /api/district-products/product/:productId` - Get districts for product
+**Important Architectural Change:**
+- ❌ **District-Product Assignment Feature REMOVED**
+- ✅ **All active products are now available to ALL doctors** across all districts
+- ✅ No district-based product filtering
+- ✅ Backend API (`/api/v1/products/team`) returns all active products
+- ✅ KAMs have NO access to product management (Super Admin only)
+- ⚠️ District-product endpoints marked as deprecated but kept for backward compatibility
 
 ---
 
-### 📝 **Phase 4: Prescription & Order Monitoring** (PENDING)
+### 📝 **Phase 3: Prescription & Order Monitoring** (PENDING)
 **Status**: 0% Complete | **Target Date**: TBD
 
 #### Planned Features:
 
-##### 4.1 Prescription Monitoring
+##### 3.1 Prescription Monitoring
 - [ ] Prescription list page (KAM-scoped)
   - Super Admin: All prescriptions
   - KAM: Only prescriptions from assigned districts
@@ -306,7 +279,7 @@ Password: Kam@Lahore123
   - `GET /api/prescriptions/district/:districtId` - Get district's prescriptions
   - `GET /api/prescriptions/stats` - Get prescription statistics
 
-##### 4.2 Order Tracking
+##### 3.2 Order Tracking
 - [ ] Order list page (KAM-scoped)
   - Super Admin: All orders
   - KAM: Only orders from assigned districts
@@ -355,12 +328,12 @@ Password: Kam@Lahore123
 
 ---
 
-### 📊 **Phase 5: Analytics & Reports** (PENDING)
+### 📊 **Phase 4: Analytics & Reports** (PENDING)
 **Status**: 0% Complete | **Target Date**: TBD
 
 #### Planned Features:
 
-##### 5.1 Analytics Dashboard Enhancement
+##### 4.1 Analytics Dashboard Enhancement
 - [ ] Real-time statistics
   - Fetch actual data from database
   - Live updates (real-time or polling)
@@ -388,7 +361,7 @@ Password: Kam@Lahore123
   - Performance rankings
   - Growth trends
 
-##### 5.2 Advanced Reports
+##### 4.2 Advanced Reports
 - [ ] Prescription reports
   - Detailed prescription data export (CSV/Excel)
   - Filters: Date range, District, Doctor, Status
@@ -438,12 +411,12 @@ Password: Kam@Lahore123
 
 ---
 
-### 🔧 **Phase 6: Advanced Features & Polish** (PENDING)
+### 🔧 **Phase 5: Advanced Features & Polish** (PENDING)
 **Status**: 0% Complete | **Target Date**: TBD
 
 #### Planned Features:
 
-##### 6.1 Settings & Configuration
+##### 5.1 Settings & Configuration
 - [ ] General settings page
   - System name and logo
   - Contact information
@@ -466,7 +439,7 @@ Password: Kam@Lahore123
   - MongoDB connection settings (read-only display)
   - Third-party integrations
 
-##### 6.2 Notifications System
+##### 5.2 Notifications System
 - [ ] In-app notifications
   - Notification bell icon
   - Notification dropdown
@@ -485,7 +458,7 @@ Password: Kam@Lahore123
   - Order update emails
   - Weekly/Monthly reports
 
-##### 6.3 Search & Filters
+##### 5.3 Search & Filters
 - [ ] Global search
   - Search across all entities
   - Quick results dropdown
@@ -497,7 +470,7 @@ Password: Kam@Lahore123
   - Saved filter presets
   - Filter by multiple criteria
 
-##### 6.4 Activity Logs & Audit Trail
+##### 5.4 Activity Logs & Audit Trail
 - [ ] Activity log page
   - All system activities
   - User actions log
@@ -510,7 +483,7 @@ Password: Kam@Lahore123
   - Timestamp of changes
   - Before/after values
 
-##### 6.5 Data Management
+##### 5.5 Data Management
 - [ ] Bulk operations
   - Bulk user import (CSV)
   - Bulk doctor import (CSV)
@@ -522,7 +495,7 @@ Password: Kam@Lahore123
   - Database backup utility
   - Data migration tools
 
-##### 6.6 UI/UX Enhancements
+##### 5.6 UI/UX Enhancements
 - [ ] Loading states
   - Skeleton loaders
   - Progress indicators

@@ -117,8 +117,8 @@ export default function DashboardPage() {
       {/* Page Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-900 mt-1">Welcome back! Here&apos;s what&apos;s happening today.</p>
+          <h1 className="text-3xl font-bold text-black">Dashboard</h1>
+          <p className="text-black mt-1">Welcome back! Here&apos;s what&apos;s happening today.</p>
         </div>
         <Button onClick={handleSyncProducts} disabled={syncing}>
           <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
@@ -142,8 +142,8 @@ export default function DashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{stat.title}</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</p>
+                  <p className="text-sm font-medium text-black">{stat.title}</p>
+                  <p className="text-3xl font-bold text-black mt-2">{stat.value}</p>
                   <div className="flex items-center mt-2 text-sm">
                     {stat.trending === "up" ? (
                       <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
@@ -155,7 +155,7 @@ export default function DashboardPage() {
                     >
                       {stat.change}
                     </span>
-                    <span className="text-gray-900 ml-1">from last month</span>
+                    <span className="text-black ml-1">from last month</span>
                   </div>
                 </div>
                 <div className={`${stat.bgColor} p-3 rounded-full`}>
@@ -176,7 +176,7 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-900">Pending Orders</span>
+                <span className="text-sm font-medium text-black">Pending Orders</span>
                 <span className="text-2xl font-bold text-orange-600">{stats.pendingOrders}</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
@@ -191,7 +191,7 @@ export default function DashboardPage() {
 
             <div className="space-y-4 mt-6">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-900">Fulfilled Orders</span>
+                <span className="text-sm font-medium text-black">Fulfilled Orders</span>
                 <span className="text-2xl font-bold text-green-600">{stats.fulfilledOrders}</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
@@ -213,16 +213,16 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-3">
               <button className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
-                <p className="font-medium text-gray-900">Add New Doctor</p>
-                <p className="text-sm text-gray-900">Create a new doctor account</p>
+                <p className="font-medium text-black">Add New Doctor</p>
+                <p className="text-sm text-black">Create a new doctor account</p>
               </button>
               <button className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
-                <p className="font-medium text-gray-900">Manage Products</p>
-                <p className="text-sm text-gray-900">Update product catalog</p>
+                <p className="font-medium text-black">Manage Products</p>
+                <p className="text-sm text-black">Update product catalog</p>
               </button>
               <button className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
-                <p className="font-medium text-gray-900">View Reports</p>
-                <p className="text-sm text-gray-900">Generate analytics reports</p>
+                <p className="font-medium text-black">View Reports</p>
+                <p className="text-sm text-black">Generate analytics reports</p>
               </button>
             </div>
           </CardContent>
@@ -235,7 +235,7 @@ export default function DashboardPage() {
           <CardTitle>Recent Activity</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-gray-900">
+          <div className="text-center py-8 text-black">
             <p>Recent activity will be displayed here</p>
             <p className="text-sm mt-2">Coming soon...</p>
           </div>

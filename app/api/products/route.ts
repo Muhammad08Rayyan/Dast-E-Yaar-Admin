@@ -54,3 +54,54 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// POST /api/products - Create new product (Super Admin only)
+export async function POST(request: NextRequest) {
+  try {
+    const authResult = await authMiddleware(request);
+    if (!authResult.authorized) {
+      return errorResponse(authResult.message, 401);
+    }
+
+    // Only Super Admin can create products
+    if (authResult.user?.role !== 'super_admin') {
+      return errorResponse('Only Super Admin can create products', 403);
+    }
+
+    await connectDB();
+
+    const body = await request.json();
+    const { name, sku, price, description, shopify_product_id, shopify_variant_id, status } = body;
+
+    // Validate required fields
+    if (!name || !sku || !price) {
+      return errorResponse('Name, SKU, and price are required', 400);
+    }
+
+    // Check if SKU already exists
+    const existingProduct = await Product.findOne({ sku: sku.toUpperCase() });
+    if (existingProduct) {
+      return errorResponse('SKU already exists', 400);
+    }
+
+    // Create product
+    const product = await Product.create({
+      name,
+      sku: sku.toUpperCase(),
+      price: parseFloat(price),
+      description: description || '',
+      shopify_product_id: shopify_product_id || undefined,
+      shopify_variant_id: shopify_variant_id || undefined,
+      status: status || 'active',
+    });
+
+    return successResponse(
+      { product },
+      'Product created successfully',
+      201
+    );
+  } catch (error: any) {
+    console.error('Error creating product:', error);
+    return errorResponse(error.message || 'Failed to create product');
+  }
+}
+

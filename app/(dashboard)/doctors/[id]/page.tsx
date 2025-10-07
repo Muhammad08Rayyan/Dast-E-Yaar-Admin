@@ -103,7 +103,7 @@ export default function DoctorDetailPage({ params }: { params: { id: string } })
   if (loading) {
     return (
       <div className="p-8 text-center">
-        <p className="text-gray-900">Loading doctor details...</p>
+        <p className="text-black">Loading doctor details...</p>
       </div>
     );
   }
@@ -111,7 +111,7 @@ export default function DoctorDetailPage({ params }: { params: { id: string } })
   if (!doctor) {
     return (
       <div className="p-8 text-center">
-        <p className="text-gray-900">Doctor not found</p>
+        <p className="text-black">Doctor not found</p>
         <Button onClick={() => router.push('/doctors')} className="mt-4">
           Back to Doctors
         </Button>
@@ -133,8 +133,8 @@ export default function DoctorDetailPage({ params }: { params: { id: string } })
             Back
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{doctor.name}</h1>
-            <p className="text-gray-900">{doctor.specialty}</p>
+            <h1 className="text-2xl font-bold text-black">{doctor.name}</h1>
+            <p className="text-black">{doctor.specialty}</p>
           </div>
         </div>
         <Badge variant={doctor.status === 'active' ? 'success' : 'default'}>
@@ -150,24 +150,24 @@ export default function DoctorDetailPage({ params }: { params: { id: string } })
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center space-x-3">
-              <Mail className="h-5 w-5 text-gray-400" />
+              <Mail className="h-5 w-5 text-black" />
               <div>
-                <p className="text-sm text-gray-900">Email</p>
-                <p className="font-medium text-gray-900">{doctor.email}</p>
+                <p className="text-sm text-black">Email</p>
+                <p className="font-medium text-black">{doctor.email}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              <Phone className="h-5 w-5 text-gray-400" />
+              <Phone className="h-5 w-5 text-black" />
               <div>
-                <p className="text-sm text-gray-900">Phone</p>
-                <p className="font-medium text-gray-900">{doctor.phone}</p>
+                <p className="text-sm text-black">Phone</p>
+                <p className="font-medium text-black">{doctor.phone}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              <Building className="h-5 w-5 text-gray-400" />
+              <Building className="h-5 w-5 text-black" />
               <div>
-                <p className="text-sm text-gray-900">PMDC Number</p>
-                <p className="font-medium text-gray-900">{doctor.pmdc_number}</p>
+                <p className="text-sm text-black">PMDC Number</p>
+                <p className="font-medium text-black">{doctor.pmdc_number}</p>
               </div>
             </div>
           </CardContent>
@@ -179,25 +179,25 @@ export default function DoctorDetailPage({ params }: { params: { id: string } })
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <p className="text-sm text-gray-900">District</p>
-              <p className="font-medium text-gray-900">
+              <p className="text-sm text-black">District</p>
+              <p className="font-medium text-black">
                 {doctor.district_id.name} ({doctor.district_id.code})
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-900">Assigned KAM</p>
+              <p className="text-sm text-black">Assigned KAM</p>
               {doctor.kam_id ? (
                 <div>
-                  <p className="font-medium text-gray-900">{doctor.kam_id.name}</p>
-                  <p className="text-sm text-gray-900">{doctor.kam_id.email}</p>
+                  <p className="font-medium text-black">{doctor.kam_id.name}</p>
+                  <p className="text-sm text-black">{doctor.kam_id.email}</p>
                 </div>
               ) : (
-                <p className="text-gray-900">Not assigned</p>
+                <p className="text-black">Not assigned</p>
               )}
             </div>
             <div>
-              <p className="text-sm text-gray-900">Joined Date</p>
-              <p className="font-medium text-gray-900">
+              <p className="text-sm text-black">Joined Date</p>
+              <p className="font-medium text-black">
                 {new Date(doctor.created_at).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
@@ -218,8 +218,8 @@ export default function DoctorDetailPage({ params }: { params: { id: string } })
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-900">Total Prescriptions</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.total_prescriptions}</p>
+                    <p className="text-sm text-black">Total Prescriptions</p>
+                    <p className="text-2xl font-bold text-black">{stats.total_prescriptions}</p>
                   </div>
                   <FileText className="h-8 w-8 text-blue-500" />
                 </div>
@@ -230,8 +230,8 @@ export default function DoctorDetailPage({ params }: { params: { id: string } })
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-900">Total Orders</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.total_orders}</p>
+                    <p className="text-sm text-black">Total Orders</p>
+                    <p className="text-2xl font-bold text-black">{stats.total_orders}</p>
                   </div>
                   <ShoppingBag className="h-8 w-8 text-green-500" />
                 </div>
@@ -242,8 +242,8 @@ export default function DoctorDetailPage({ params }: { params: { id: string } })
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-900">Pending</p>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="text-sm text-black">Pending</p>
+                    <p className="text-2xl font-bold text-black">
                       {getPrescriptionStatusCount('pending')}
                     </p>
                   </div>
@@ -256,8 +256,8 @@ export default function DoctorDetailPage({ params }: { params: { id: string } })
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-900">Fulfilled</p>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="text-sm text-black">Fulfilled</p>
+                    <p className="text-2xl font-bold text-black">
                       {getOrderStatusCount('fulfilled')}
                     </p>
                   </div>
@@ -276,26 +276,26 @@ export default function DoctorDetailPage({ params }: { params: { id: string } })
         </CardHeader>
         <CardContent>
           {recentPrescriptions.length === 0 ? (
-            <p className="text-gray-900 text-center py-8">No prescriptions yet</p>
+            <p className="text-black text-center py-8">No prescriptions yet</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-gray-900">MRN</TableHead>
-                  <TableHead className="text-gray-900">Patient Name</TableHead>
-                  <TableHead className="text-gray-900">Status</TableHead>
-                  <TableHead className="text-gray-900">Date</TableHead>
+                  <TableHead className="text-black">MRN</TableHead>
+                  <TableHead className="text-black">Patient Name</TableHead>
+                  <TableHead className="text-black">Status</TableHead>
+                  <TableHead className="text-black">Date</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {recentPrescriptions.map((prescription) => (
                   <TableRow key={prescription._id}>
                     <TableCell>
-                      <code className="bg-gray-100 px-2 py-1 rounded text-sm text-gray-900">
+                      <code className="bg-gray-100 px-2 py-1 rounded text-sm text-black">
                         {prescription.patient_id.mrn}
                       </code>
                     </TableCell>
-                    <TableCell className="font-medium text-gray-900">
+                    <TableCell className="font-medium text-black">
                       {prescription.patient_id.name}
                     </TableCell>
                     <TableCell>
@@ -313,7 +313,7 @@ export default function DoctorDetailPage({ params }: { params: { id: string } })
                         {prescription.order_status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-gray-900">
+                    <TableCell className="text-black">
                       {new Date(prescription.created_at).toLocaleDateString()}
                     </TableCell>
                   </TableRow>

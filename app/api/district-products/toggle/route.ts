@@ -6,6 +6,9 @@ import Product from '@/lib/models/Product';
 import { successResponse, errorResponse } from '@/lib/utils/response';
 import mongoose from 'mongoose';
 
+// DEPRECATED: District-product assignment feature has been removed.
+// All products are now available to all doctors regardless of district.
+// This endpoint is kept for backward compatibility but does nothing.
 // POST /api/district-products/toggle - Toggle product availability for district
 export async function POST(request: NextRequest) {
   try {

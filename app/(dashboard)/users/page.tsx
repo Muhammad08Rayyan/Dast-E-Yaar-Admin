@@ -241,8 +241,8 @@ export default function KAMsPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Key Account Managers</h1>
-          <p className="text-gray-900">Manage KAMs and their district assignments</p>
+          <h1 className="text-2xl font-bold text-black">Key Account Managers</h1>
+          <p className="text-black">Manage KAMs and their district assignments</p>
         </div>
         <Button onClick={handleCreate}>
           <Plus className="h-4 w-4 mr-2" />
@@ -255,7 +255,7 @@ export default function KAMsPage() {
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black" />
               <Input
                 placeholder="Search by name or email..."
                 value={search}
@@ -277,36 +277,36 @@ export default function KAMsPage() {
         <CardContent className="p-0">
           {loading ? (
             <div className="p-8 text-center">
-              <p className="text-gray-900">Loading KAMs...</p>
+              <p className="text-black">Loading KAMs...</p>
             </div>
           ) : users.length === 0 ? (
             <div className="p-8 text-center">
-              <p className="text-gray-900">No KAMs found</p>
+              <p className="text-black">No KAMs found</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-gray-900">Name</TableHead>
-                  <TableHead className="text-gray-900">Email</TableHead>
-                  <TableHead className="text-gray-900">Assigned District</TableHead>
-                  <TableHead className="text-gray-900">Status</TableHead>
-                  <TableHead className="text-gray-900">Actions</TableHead>
+                  <TableHead className="text-black">Name</TableHead>
+                  <TableHead className="text-black">Email</TableHead>
+                  <TableHead className="text-black">Assigned District</TableHead>
+                  <TableHead className="text-black">Status</TableHead>
+                  <TableHead className="text-black">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {users.map((user) => (
                   <TableRow key={user._id}>
-                    <TableCell className="font-medium text-gray-900">{user.name}</TableCell>
-                    <TableCell className="text-gray-900">{user.email}</TableCell>
+                    <TableCell className="font-medium text-black">{user.name}</TableCell>
+                    <TableCell className="text-black">{user.email}</TableCell>
                     <TableCell>
                       {user.assigned_district ? (
                         <div>
-                          <div className="font-medium text-gray-900">{user.assigned_district.name}</div>
-                          <div className="text-sm text-gray-700">{user.assigned_district.code}</div>
+                          <div className="font-medium text-black">{user.assigned_district.name}</div>
+                          <div className="text-sm text-black">{user.assigned_district.code}</div>
                         </div>
                       ) : (
-                        <span className="text-gray-700">Not assigned</span>
+                        <span className="text-black">Not assigned</span>
                       )}
                     </TableCell>
                     <TableCell>
@@ -406,7 +406,7 @@ export default function KAMsPage() {
                   ))}
                 </Select>
                 {formErrors.assigned_district && <p className="text-red-500 text-sm mt-1">{formErrors.assigned_district}</p>}
-                <p className="text-xs text-gray-700 mt-1">Each KAM is assigned to one district</p>
+                <p className="text-xs text-black mt-1">Each KAM is assigned to one district</p>
               </div>
 
               <div>

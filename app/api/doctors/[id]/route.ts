@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { authMiddleware } from '@/lib/auth/middleware';
 import { connectDB } from '@/lib/db/connection';
 import Doctor from '@/lib/models/Doctor';
+import District from '@/lib/models/District';
 import { successResponse, errorResponse } from '@/lib/utils/response';
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
@@ -49,7 +50,7 @@ export async function GET(
   }
 }
 
-// PUT /api/doctors/:id - Update doctor
+// PUT /api/doctors/:id - Update doctor (Admin only)
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -58,6 +59,11 @@ export async function PUT(
     const authResult = await authMiddleware(request);
     if (!authResult.authorized) {
       return errorResponse(authResult.message, 401);
+    }
+
+    // Only Super Admin can update doctors
+    if (authResult.user?.role !== 'super_admin') {
+      return errorResponse('Only Super Admin can update doctors', 403);
     }
 
     await connectDB();
@@ -69,23 +75,11 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { email, password, name, phone, district_id, kam_id, pmdc_number, specialty, status } = body;
+    const { email, password, name, phone, district_id, pmdc_number, specialty, status } = body;
 
     const doctor = await Doctor.findById(id);
     if (!doctor) {
       return errorResponse('Doctor not found', 404);
-    }
-
-    // KAM scoping: Check if KAM can update this doctor
-    if (authResult.user?.role === 'kam') {
-      if (!authResult.user.assigned_district || 
-          authResult.user.assigned_district.toString() !== doctor.district_id.toString()) {
-        return errorResponse('You do not have access to this doctor', 403);
-      }
-      // KAM can't change district
-      if (district_id && district_id !== doctor.district_id.toString()) {
-        return errorResponse('You cannot change doctor district', 403);
-      }
     }
 
     // Check if email is being changed and if it's already taken
@@ -100,12 +94,20 @@ export async function PUT(
     // Update fields
     if (name) doctor.name = name;
     if (phone) doctor.phone = phone;
-    if (district_id) doctor.district_id = district_id;
-    if (kam_id !== undefined) doctor.kam_id = kam_id || null;
     if (pmdc_number) doctor.pmdc_number = pmdc_number;
     if (specialty) doctor.specialty = specialty;
     if (status && ['active', 'inactive'].includes(status)) {
       doctor.status = status;
+    }
+
+    // If district is being changed, auto-update KAM
+    if (district_id && district_id !== doctor.district_id.toString()) {
+      const newDistrict = await District.findById(district_id);
+      if (!newDistrict) {
+        return errorResponse('District not found', 404);
+      }
+      doctor.district_id = district_id;
+      doctor.kam_id = newDistrict.kam_id || null; // Auto-assign new KAM from district
     }
 
     // Update password if provided
@@ -130,7 +132,7 @@ export async function PUT(
   }
 }
 
-// DELETE /api/doctors/:id - Delete doctor permanently
+// DELETE /api/doctors/:id - Delete doctor permanently (Admin only)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -139,6 +141,11 @@ export async function DELETE(
     const authResult = await authMiddleware(request);
     if (!authResult.authorized) {
       return errorResponse(authResult.message, 401);
+    }
+
+    // Only Super Admin can delete doctors
+    if (authResult.user?.role !== 'super_admin') {
+      return errorResponse('Only Super Admin can delete doctors', 403);
     }
 
     await connectDB();
@@ -152,14 +159,6 @@ export async function DELETE(
     const doctor = await Doctor.findById(id);
     if (!doctor) {
       return errorResponse('Doctor not found', 404);
-    }
-
-    // KAM scoping: Check if KAM can delete this doctor
-    if (authResult.user?.role === 'kam') {
-      if (!authResult.user.assigned_district || 
-          authResult.user.assigned_district.toString() !== doctor.district_id.toString()) {
-        return errorResponse('You do not have access to this doctor', 403);
-      }
     }
 
     // Permanently delete

@@ -9,7 +9,8 @@
     "lint": "eslint",
     "seed:admin": "ts-node scripts/seed-admin.ts",
     "sync:products": "npx ts-node -r dotenv/config scripts/sync-shopify-products.ts dotenv_config_path=.env.local",
-    "check:district-products": "node scripts/check-district-products.js"
+    "check:district-products": "node scripts/check-district-products.js",
+    "fix:text": "node scripts/replace-gray-to-black.js"
   },
   "dependencies": {
     "react": "19.1.0",

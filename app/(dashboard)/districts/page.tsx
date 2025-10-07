@@ -254,8 +254,8 @@ export default function DistrictsPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">District Management</h1>
-          <p className="text-gray-900">Manage districts and team assignments</p>
+          <h1 className="text-2xl font-bold text-black">District Management</h1>
+          <p className="text-black">Manage districts and team assignments</p>
         </div>
         {isSuperAdmin && (
           <Button onClick={handleCreate}>
@@ -270,7 +270,7 @@ export default function DistrictsPage() {
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black" />
               <Input
                 placeholder="Search by name or code..."
                 value={search}
@@ -292,40 +292,40 @@ export default function DistrictsPage() {
         <CardContent className="p-0">
           {loading ? (
             <div className="p-8 text-center">
-              <p className="text-gray-900">Loading districts...</p>
+              <p className="text-black">Loading districts...</p>
             </div>
           ) : districts.length === 0 ? (
             <div className="p-8 text-center">
-              <p className="text-gray-900">No districts found</p>
+              <p className="text-black">No districts found</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-gray-900">District Name</TableHead>
-                  <TableHead className="text-gray-900">Code</TableHead>
-                  <TableHead className="text-gray-900">Assigned KAM</TableHead>
-                  <TableHead className="text-gray-900">Status</TableHead>
-                  {isSuperAdmin && <TableHead className="text-gray-900">Actions</TableHead>}
+                  <TableHead className="text-black">District Name</TableHead>
+                  <TableHead className="text-black">Code</TableHead>
+                  <TableHead className="text-black">Assigned KAM</TableHead>
+                  <TableHead className="text-black">Status</TableHead>
+                  {isSuperAdmin && <TableHead className="text-black">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {districts.map((district) => (
                   <TableRow key={district._id}>
-                    <TableCell className="font-medium text-gray-900">{district.name}</TableCell>
+                    <TableCell className="font-medium text-black">{district.name}</TableCell>
                     <TableCell>
-                      <code className="bg-gray-100 px-2 py-1 rounded text-sm text-gray-900">
+                      <code className="bg-gray-100 px-2 py-1 rounded text-sm text-black">
                         {district.code}
                       </code>
                     </TableCell>
                     <TableCell>
                       {district.kam_id ? (
                         <div>
-                          <div className="font-medium text-gray-900">{district.kam_id.name}</div>
-                          <div className="text-sm text-gray-700">{district.kam_id.email}</div>
+                          <div className="font-medium text-black">{district.kam_id.name}</div>
+                          <div className="text-sm text-black">{district.kam_id.email}</div>
                         </div>
                       ) : (
-                        <span className="text-gray-700 text-sm">Not assigned</span>
+                        <span className="text-black text-sm">Not assigned</span>
                       )}
                     </TableCell>
                     <TableCell>
