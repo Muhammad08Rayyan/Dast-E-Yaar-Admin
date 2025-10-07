@@ -26,8 +26,26 @@ if (!global.mongoose) {
   global.mongoose = cached;
 }
 
+// Pre-load all models to prevent race conditions
+let modelsLoaded = false;
+function loadModels() {
+  if (!modelsLoaded) {
+    // Import all models to ensure they're registered
+    require('./models/District');
+    require('./models/User');
+    require('./models/Doctor');
+    require('./models/Product');
+    require('./models/DistrictProduct');
+    require('./models/Patient');
+    require('./models/Prescription');
+    require('./models/Order');
+    modelsLoaded = true;
+  }
+}
+
 async function connectDB() {
   if (cached.conn) {
+    loadModels(); // Ensure models are loaded even if connection is cached
     return cached.conn;
   }
 
@@ -40,6 +58,7 @@ async function connectDB() {
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+      loadModels(); // Load models after connection
       return mongoose;
     });
   }

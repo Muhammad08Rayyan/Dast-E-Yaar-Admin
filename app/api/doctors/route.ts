@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { authMiddleware } from '@/lib/auth/middleware';
 import { connectDB } from '@/lib/db/connection';
-import { Doctor, District, User, ensureModelsLoaded } from '@/lib/models';
+import Doctor from '@/lib/models/Doctor';
 import { successResponse, errorResponse } from '@/lib/utils/response';
 import bcrypt from 'bcryptjs';
 
@@ -14,9 +14,6 @@ export async function GET(request: NextRequest) {
     }
 
     await connectDB();
-    
-    // Ensure all models are registered
-    ensureModelsLoaded();
 
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
