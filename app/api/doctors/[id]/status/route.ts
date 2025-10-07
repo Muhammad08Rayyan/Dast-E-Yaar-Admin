@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import { authMiddleware } from '@/lib/auth/middleware';
 import { connectDB } from '@/lib/db/connection';
 import Doctor from '@/lib/models/Doctor';
+import District from '@/lib/models/District';
+import User from '@/lib/models/User';
 import { successResponse, errorResponse } from '@/lib/utils/response';
 import mongoose from 'mongoose';
 

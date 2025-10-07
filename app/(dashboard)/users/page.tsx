@@ -72,16 +72,21 @@ export default function KAMsPage() {
       params.append('role', 'kam');
       if (search) params.append('search', search);
       if (statusFilter) params.append('status', statusFilter);
+      params.append('limit', '100'); // Get more users
 
       const response = await fetch(`/api/users?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
       if (data.success) {
-        setUsers(data.data.users);
+        setUsers(data.data.users || []);
+      } else {
+        console.error('Failed to fetch users:', data);
+        setUsers([]);
       }
     } catch (error) {
       console.error('Error fetching KAMs:', error);
+      setUsers([]);
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import connectDB from '@/lib/db/connection';
 import User from '@/lib/models/User';
+import District from '@/lib/models/District';
 import { withAuth } from '@/lib/auth/middleware';
 import { successResponse, errorResponse } from '@/lib/utils/response';
 

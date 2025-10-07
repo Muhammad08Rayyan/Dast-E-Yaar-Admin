@@ -70,16 +70,21 @@ export default function DoctorsPage() {
       const params = new URLSearchParams();
       if (search) params.append('search', search);
       if (specialtyFilter) params.append('specialty', specialtyFilter);
+      params.append('limit', '100'); // Get more doctors
 
       const response = await fetch(`/api/doctors?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
       if (data.success) {
-        setDoctors(data.data.doctors);
+        setDoctors(data.data.doctors || []);
+      } else {
+        console.error('Failed to fetch doctors:', data);
+        setDoctors([]);
       }
     } catch (error) {
       console.error('Error fetching doctors:', error);
+      setDoctors([]);
     } finally {
       setLoading(false);
     }

@@ -86,16 +86,21 @@ export default function DistrictsPage() {
       const params = new URLSearchParams();
       if (search) params.append('search', search);
       if (statusFilter) params.append('status', statusFilter);
+      params.append('limit', '100'); // Get more districts
 
       const response = await fetch(`/api/districts?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
       if (data.success) {
-        setDistricts(data.data.districts);
+        setDistricts(data.data.districts || []);
+      } else {
+        console.error('Failed to fetch districts:', data);
+        setDistricts([]);
       }
     } catch (error) {
       console.error('Error fetching districts:', error);
+      setDistricts([]);
     } finally {
       setLoading(false);
     }
