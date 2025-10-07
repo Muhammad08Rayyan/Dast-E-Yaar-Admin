@@ -34,6 +34,7 @@ export default function ProductsPage() {
       const token = localStorage.getItem('token');
       const params = new URLSearchParams();
       if (search) params.append('search', search);
+      params.append('limit', '3000'); // Get all products
 
       const response = await fetch(`/api/products?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
