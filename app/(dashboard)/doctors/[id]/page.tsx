@@ -1,0 +1,329 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft, Mail, Phone, Building, Activity, FileText, ShoppingBag } from 'lucide-react';
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table';
+
+interface Doctor {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  pmdc_number: string;
+  specialty: string;
+  district_id: { _id: string; name: string; code: string };
+  kam_id: { _id: string; name: string; email: string } | null;
+  status: string;
+  created_at: string;
+}
+
+interface Stats {
+  total_prescriptions: number;
+  total_orders: number;
+  prescriptions_by_status: any[];
+  orders_by_status: any[];
+}
+
+interface Prescription {
+  _id: string;
+  mrn: string;
+  patient_id: { name: string; mrn: string };
+  order_status: string;
+  created_at: string;
+}
+
+export default function DoctorDetailPage({ params }: { params: { id: string } }) {
+  const router = useRouter();
+  const [doctor, setDoctor] = useState<Doctor | null>(null);
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [recentPrescriptions, setRecentPrescriptions] = useState<Prescription[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchDoctorDetails = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/doctors/${params.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      if (data.success) {
+        setDoctor(data.data.doctor);
+      }
+    } catch (error) {
+      console.error('Error fetching doctor:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [params.id]);
+
+  const fetchDoctorStats = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/doctors/${params.id}/stats`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      if (data.success) {
+        setStats(data.data.stats);
+        setRecentPrescriptions(data.data.recent_prescriptions);
+      }
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  }, [params.id]);
+
+  useEffect(() => {
+    fetchDoctorDetails();
+    fetchDoctorStats();
+  }, [fetchDoctorDetails, fetchDoctorStats]);
+
+  const getPrescriptionStatusCount = (status: string) => {
+    if (!stats) return 0;
+    const item = stats.prescriptions_by_status.find((s: any) => s._id === status);
+    return item ? item.count : 0;
+  };
+
+  const getOrderStatusCount = (status: string) => {
+    if (!stats) return 0;
+    const item = stats.orders_by_status.find((s: any) => s._id === status);
+    return item ? item.count : 0;
+  };
+
+  if (loading) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-gray-900">Loading doctor details...</p>
+      </div>
+    );
+  }
+
+  if (!doctor) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-gray-900">Doctor not found</p>
+        <Button onClick={() => router.push('/doctors')} className="mt-4">
+          Back to Doctors
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push('/doctors')}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">{doctor.name}</h1>
+            <p className="text-gray-900">{doctor.specialty}</p>
+          </div>
+        </div>
+        <Badge variant={doctor.status === 'active' ? 'success' : 'default'}>
+          {doctor.status}
+        </Badge>
+      </div>
+
+      {/* Doctor Information */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Contact Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <Mail className="h-5 w-5 text-gray-400" />
+              <div>
+                <p className="text-sm text-gray-900">Email</p>
+                <p className="font-medium text-gray-900">{doctor.email}</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Phone className="h-5 w-5 text-gray-400" />
+              <div>
+                <p className="text-sm text-gray-900">Phone</p>
+                <p className="font-medium text-gray-900">{doctor.phone}</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Building className="h-5 w-5 text-gray-400" />
+              <div>
+                <p className="text-sm text-gray-900">PMDC Number</p>
+                <p className="font-medium text-gray-900">{doctor.pmdc_number}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Assignment Details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="text-sm text-gray-900">District</p>
+              <p className="font-medium text-gray-900">
+                {doctor.district_id.name} ({doctor.district_id.code})
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-900">Assigned KAM</p>
+              {doctor.kam_id ? (
+                <div>
+                  <p className="font-medium text-gray-900">{doctor.kam_id.name}</p>
+                  <p className="text-sm text-gray-900">{doctor.kam_id.email}</p>
+                </div>
+              ) : (
+                <p className="text-gray-900">Not assigned</p>
+              )}
+            </div>
+            <div>
+              <p className="text-sm text-gray-900">Joined Date</p>
+              <p className="font-medium text-gray-900">
+                {new Date(doctor.created_at).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Statistics */}
+      {stats && (
+        <div>
+          <h2 className="text-lg font-semibold mb-4">Performance Statistics</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-900">Total Prescriptions</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.total_prescriptions}</p>
+                  </div>
+                  <FileText className="h-8 w-8 text-blue-500" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-900">Total Orders</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.total_orders}</p>
+                  </div>
+                  <ShoppingBag className="h-8 w-8 text-green-500" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-900">Pending</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {getPrescriptionStatusCount('pending')}
+                    </p>
+                  </div>
+                  <Activity className="h-8 w-8 text-yellow-500" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-900">Fulfilled</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {getOrderStatusCount('fulfilled')}
+                    </p>
+                  </div>
+                  <Activity className="h-8 w-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {/* Recent Prescriptions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Prescriptions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {recentPrescriptions.length === 0 ? (
+            <p className="text-gray-900 text-center py-8">No prescriptions yet</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-gray-900">MRN</TableHead>
+                  <TableHead className="text-gray-900">Patient Name</TableHead>
+                  <TableHead className="text-gray-900">Status</TableHead>
+                  <TableHead className="text-gray-900">Date</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {recentPrescriptions.map((prescription) => (
+                  <TableRow key={prescription._id}>
+                    <TableCell>
+                      <code className="bg-gray-100 px-2 py-1 rounded text-sm text-gray-900">
+                        {prescription.patient_id.mrn}
+                      </code>
+                    </TableCell>
+                    <TableCell className="font-medium text-gray-900">
+                      {prescription.patient_id.name}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          prescription.order_status === 'fulfilled'
+                            ? 'success'
+                            : prescription.order_status === 'processing'
+                            ? 'info'
+                            : prescription.order_status === 'cancelled'
+                            ? 'danger'
+                            : 'warning'
+                        }
+                      >
+                        {prescription.order_status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-gray-900">
+                      {new Date(prescription.created_at).toLocaleDateString()}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
