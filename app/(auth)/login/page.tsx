@@ -108,7 +108,6 @@ export default function LoginPage() {
             <div className="mt-4 p-3 bg-gray-50 rounded-md text-xs text-gray-600">
               <p className="font-semibold mb-1">Demo Credentials:</p>
               <p>Super Admin: superadmin@dasteyaar.com / Super@Admin123</p>
-              <p>KAM: kam.lahore@dasteyaar.com / Kam@Lahore123</p>
             </div>
           </form>
         </CardContent>
