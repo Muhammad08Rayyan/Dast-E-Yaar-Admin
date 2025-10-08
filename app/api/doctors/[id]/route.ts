@@ -1,8 +1,7 @@
 import { NextRequest } from 'next/server';
 import { authMiddleware } from '@/lib/auth/middleware';
 import { connectDB } from '@/lib/db/connection';
-import Doctor from '@/lib/models/Doctor';
-import District from '@/lib/models/District';
+import { Doctor, District, Team, User } from '@/lib/models';
 import { successResponse, errorResponse } from '@/lib/utils/response';
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
@@ -29,6 +28,7 @@ export async function GET(
     const doctor = await Doctor.findById(id)
       .select('-password')
       .populate('district_id', 'name code')
+      .populate('team_id', 'name')
       .populate('kam_id', 'name email');
 
     if (!doctor) {
@@ -37,8 +37,14 @@ export async function GET(
 
     // KAM scoping: Check if KAM can access this doctor
     if (authResult.user?.role === 'kam') {
-      if (!authResult.user.assigned_district || 
-          authResult.user.assigned_district.toString() !== doctor.district_id._id.toString()) {
+      // Get KAM's team
+      const kamUser = await User.findById(authResult.user.userId);
+      if (kamUser && kamUser.team_id) {
+        // Check if doctor belongs to KAM's team
+        if (doctor.team_id && doctor.team_id._id.toString() !== kamUser.team_id.toString()) {
+          return errorResponse('You do not have access to this doctor', 403);
+        }
+      } else {
         return errorResponse('You do not have access to this doctor', 403);
       }
     }
@@ -75,7 +81,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { email, password, name, phone, district_id, pmdc_number, specialty, status } = body;
+    const { email, password, name, phone, district_id, team_id, pmdc_number, specialty, status } = body;
 
     const doctor = await Doctor.findById(id);
     if (!doctor) {
@@ -100,14 +106,35 @@ export async function PUT(
       doctor.status = status;
     }
 
-    // If district is being changed, auto-update KAM
+    // If district is being changed, update district
     if (district_id && district_id !== doctor.district_id.toString()) {
       const newDistrict = await District.findById(district_id);
       if (!newDistrict) {
         return errorResponse('District not found', 404);
       }
       doctor.district_id = district_id;
-      doctor.kam_id = newDistrict.kam_id || null; // Auto-assign new KAM from district
+    }
+
+    // If team is being changed, auto-update KAM
+    if (team_id && team_id !== doctor.team_id.toString()) {
+      const newTeam = await Team.findById(team_id);
+      if (!newTeam) {
+        return errorResponse('Team not found', 404);
+      }
+      
+      // Verify team belongs to doctor's district
+      if (newTeam.district_id.toString() !== doctor.district_id.toString()) {
+        return errorResponse('Team does not belong to doctor\'s district', 400);
+      }
+      
+      // Find KAM assigned to this team
+      const kam = await User.findOne({ team_id: team_id, role: 'kam', status: 'active' });
+      if (!kam) {
+        return errorResponse('No active KAM found for this team', 404);
+      }
+      
+      doctor.team_id = new mongoose.Types.ObjectId(team_id);
+      doctor.kam_id = new mongoose.Types.ObjectId(kam._id); // Auto-assign new KAM from team
     }
 
     // Update password if provided
@@ -120,6 +147,7 @@ export async function PUT(
     const updatedDoctor = await Doctor.findById(id)
       .select('-password')
       .populate('district_id', 'name code')
+      .populate('team_id', 'name')
       .populate('kam_id', 'name email');
 
     return successResponse(

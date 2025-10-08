@@ -7,6 +7,7 @@ export interface IDoctor extends Document {
   name: string;
   phone: string;
   district_id: mongoose.Types.ObjectId;
+  team_id: mongoose.Types.ObjectId;
   kam_id: mongoose.Types.ObjectId;
   pmdc_number: string;
   specialty: string;
@@ -42,10 +43,15 @@ const DoctorSchema = new Schema<IDoctor>(
       ref: 'District',
       required: true,
     },
+    team_id: {
+      type: Schema.Types.ObjectId,
+      ref: 'Team',
+      required: true,
+    },
     kam_id: {
       type: Schema.Types.ObjectId,
       ref: 'User',
-      required: false, // Auto-assigned based on district
+      required: false, // Auto-assigned based on team
     },
     pmdc_number: {
       type: String,

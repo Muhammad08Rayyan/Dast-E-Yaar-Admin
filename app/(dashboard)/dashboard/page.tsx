@@ -15,6 +15,7 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
+  UsersRound,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -37,6 +38,9 @@ interface DashboardStats {
   patients: number;
   products: number;
   districts: number;
+  teams: number;
+  activeTeams: number;
+  activeKAMs: number;
 }
 
 interface Activity {
@@ -91,6 +95,9 @@ export default function DashboardPage() {
     patients: 0,
     products: 0,
     districts: 0,
+    teams: 0,
+    activeTeams: 0,
+    activeKAMs: 0,
   });
   const [activities, setActivities] = useState<Activity[]>([]);
   const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
@@ -228,11 +235,20 @@ export default function DashboardPage() {
 
   const secondaryStatCards = [
     {
-      title: "Active Orders",
-      value: stats.orders.active,
-      icon: Activity,
+      title: "Active Teams",
+      value: stats.activeTeams,
+      icon: UsersRound,
+      color: "text-purple-600",
+      bgColor: "bg-purple-50",
+      link: "/teams",
+    },
+    {
+      title: "Active KAMs",
+      value: stats.activeKAMs,
+      icon: UserCog,
       color: "text-orange-600",
       bgColor: "bg-orange-50",
+      link: "/users",
     },
     {
       title: "Total Products",
@@ -249,14 +265,6 @@ export default function DashboardPage() {
       color: "text-teal-600",
       bgColor: "bg-teal-50",
       link: "/districts",
-    },
-    {
-      title: "Total Users",
-      value: stats.users,
-      icon: Users,
-      color: "text-gray-600",
-      bgColor: "bg-gray-50",
-      link: "/users",
     },
   ];
 

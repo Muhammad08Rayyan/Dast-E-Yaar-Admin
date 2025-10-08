@@ -22,6 +22,7 @@ interface Doctor {
   phone: string;
   pmdc_number: string;
   specialty: string;
+  team_id?: { _id: string; name: string };
   district_id: { _id: string; name: string; code: string };
   kam_id: { _id: string; name: string; email: string } | null;
   status: string;
@@ -40,7 +41,7 @@ interface Prescription {
   mrn: string;
   patient_id: { name: string; mrn: string };
   order_status: string;
-  created_at: string;
+  createdAt: string;
 }
 
 export default function DoctorDetailPage({ params }: { params: { id: string } }) {
@@ -49,6 +50,22 @@ export default function DoctorDetailPage({ params }: { params: { id: string } })
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentPrescriptions, setRecentPrescriptions] = useState<Prescription[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentUserRole, setCurrentUserRole] = useState<string>('');
+
+  const fetchCurrentUser = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      if (data.success) {
+        setCurrentUserRole(data.data.role || '');
+      }
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+    }
+  }, []);
 
   const fetchDoctorDetails = useCallback(async () => {
     try {
@@ -84,9 +101,10 @@ export default function DoctorDetailPage({ params }: { params: { id: string } })
   }, [params.id]);
 
   useEffect(() => {
+    fetchCurrentUser();
     fetchDoctorDetails();
     fetchDoctorStats();
-  }, [fetchDoctorDetails, fetchDoctorStats]);
+  }, [fetchCurrentUser, fetchDoctorDetails, fetchDoctorStats]);
 
   const getPrescriptionStatusCount = (status: string) => {
     if (!stats) return 0;
@@ -180,6 +198,12 @@ export default function DoctorDetailPage({ params }: { params: { id: string } })
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
+              <p className="text-sm text-black">Team</p>
+              <p className="font-medium text-black">
+                {doctor.team_id?.name || 'Not assigned'}
+              </p>
+            </div>
+            <div>
               <p className="text-sm text-black">District</p>
               <p className="font-medium text-black">
                 {doctor.district_id.name} ({doctor.district_id.code})
@@ -270,60 +294,62 @@ export default function DoctorDetailPage({ params }: { params: { id: string } })
         </div>
       )}
 
-      {/* Recent Prescriptions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-black">Recent Prescriptions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {recentPrescriptions.length === 0 ? (
-            <p className="text-black text-center py-8">No prescriptions yet</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-black">MRN</TableHead>
-                  <TableHead className="text-black">Patient Name</TableHead>
-                  <TableHead className="text-black">Status</TableHead>
-                  <TableHead className="text-black">Date</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentPrescriptions.map((prescription) => (
-                  <TableRow key={prescription._id}>
-                    <TableCell>
-                      <code className="bg-gray-100 px-2 py-1 rounded text-sm text-black">
-                        {prescription.patient_id.mrn}
-                      </code>
-                    </TableCell>
-                    <TableCell className="font-medium text-black">
-                      {prescription.patient_id.name}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          prescription.order_status === 'fulfilled'
-                            ? 'success'
-                            : prescription.order_status === 'processing'
-                            ? 'info'
-                            : prescription.order_status === 'cancelled'
-                            ? 'danger'
-                            : 'warning'
-                        }
-                      >
-                        {prescription.order_status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-black">
-                      {new Date(prescription.created_at).toLocaleDateString()}
-                    </TableCell>
+      {/* Recent Prescriptions - Only show for super_admin */}
+      {currentUserRole === 'super_admin' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-black">Recent Prescriptions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {recentPrescriptions.length === 0 ? (
+              <p className="text-black text-center py-8">No prescriptions yet</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-black">MRN</TableHead>
+                    <TableHead className="text-black">Patient Name</TableHead>
+                    <TableHead className="text-black">Status</TableHead>
+                    <TableHead className="text-black">Date</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {recentPrescriptions.map((prescription) => (
+                    <TableRow key={prescription._id}>
+                      <TableCell>
+                        <code className="bg-gray-100 px-2 py-1 rounded text-sm text-black">
+                          {prescription.patient_id.mrn}
+                        </code>
+                      </TableCell>
+                      <TableCell className="font-medium text-black">
+                        {prescription.patient_id.name}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            prescription.order_status === 'fulfilled'
+                              ? 'success'
+                              : prescription.order_status === 'processing'
+                              ? 'info'
+                              : prescription.order_status === 'cancelled'
+                              ? 'danger'
+                              : 'warning'
+                          }
+                        >
+                          {prescription.order_status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-black">
+                        {new Date(prescription.createdAt).toLocaleDateString()}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

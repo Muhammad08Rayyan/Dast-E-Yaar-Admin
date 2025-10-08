@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/connection';
-import { User, Doctor, Prescription, Order, Patient, Product, District } from '@/lib/models';
+import { User, Doctor, Prescription, Order, Patient, Product, District, Team } from '@/lib/models';
 import { apiResponse } from '@/lib/utils/response';
 import { verifyAuth } from '@/lib/auth/middleware';
 
@@ -35,11 +35,14 @@ export async function GET(req: NextRequest) {
       totalPatients,
       totalProducts,
       totalDistricts,
+      totalTeams,
       pendingOrders,
       fulfilledOrders,
       activeOrders,
       activeDoctors,
       inactiveDoctors,
+      activeTeams,
+      activeKAMs,
     ] = await Promise.all([
       User.countDocuments(),
       Doctor.countDocuments(),
@@ -48,11 +51,14 @@ export async function GET(req: NextRequest) {
       Patient.countDocuments(),
       Product.countDocuments(),
       District.countDocuments(),
+      Team.countDocuments(),
       Order.countDocuments({ order_status: 'pending' }),
       Order.countDocuments({ order_status: 'fulfilled' }),
       Order.countDocuments({ order_status: { $in: ['pending', 'processing'] } }),
       Doctor.countDocuments({ status: 'active' }),
       Doctor.countDocuments({ status: 'inactive' }),
+      Team.countDocuments({ status: 'active' }),
+      User.countDocuments({ role: 'kam', status: 'active' }),
     ]);
 
     // Calculate order statistics
@@ -80,6 +86,9 @@ export async function GET(req: NextRequest) {
       patients: totalPatients,
       products: totalProducts,
       districts: totalDistricts,
+      teams: totalTeams,
+      activeTeams,
+      activeKAMs,
     };
 
     return NextResponse.json(

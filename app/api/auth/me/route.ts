@@ -10,7 +10,8 @@ async function handler(req: NextRequest & { user?: any }) {
 
     const user = await User.findById(req.user.userId)
       .select('-password')
-      .populate('assigned_district', 'name code');
+      .populate('district_id', 'name code')
+      .populate('team_id', 'name');
 
     if (!user) {
       return errorResponse('User not found', 404);
@@ -21,7 +22,8 @@ async function handler(req: NextRequest & { user?: any }) {
       email: user.email,
       name: user.name,
       role: user.role,
-      assigned_district: user.assigned_district,
+      district_id: user.district_id,
+      team_id: user.team_id,
       status: user.status,
     });
   } catch (error: any) {

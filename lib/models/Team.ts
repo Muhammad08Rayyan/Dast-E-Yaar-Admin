@@ -1,27 +1,31 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
-export interface IDistrict extends Document {
+export interface ITeam extends Document {
   _id: string;
   name: string;
-  code: string;
+  description: string;
+  district_id: mongoose.Types.ObjectId;
   status: 'active' | 'inactive';
   created_at: Date;
   updated_at: Date;
 }
 
-const DistrictSchema = new Schema<IDistrict>(
+const TeamSchema = new Schema<ITeam>(
   {
     name: {
       type: String,
       required: true,
       trim: true,
     },
-    code: {
+    description: {
       type: String,
-      required: true,
-      unique: true,
-      uppercase: true,
       trim: true,
+      default: '',
+    },
+    district_id: {
+      type: Schema.Types.ObjectId,
+      ref: 'District',
+      required: true,
     },
     status: {
       type: String,
@@ -34,7 +38,10 @@ const DistrictSchema = new Schema<IDistrict>(
   }
 );
 
-const District: Model<IDistrict> = mongoose.models.District || mongoose.model<IDistrict>('District', DistrictSchema);
+// Index for efficient queries
+TeamSchema.index({ district_id: 1, status: 1 });
 
-export default District;
+const Team: Model<ITeam> = mongoose.models.Team || mongoose.model<ITeam>('Team', TeamSchema);
+
+export default Team;
 

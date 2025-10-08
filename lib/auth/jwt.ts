@@ -10,7 +10,8 @@ export interface JWTPayload {
   userId: string;
   email: string;
   role: 'super_admin' | 'kam';
-  assigned_district?: string | null;
+  team_id?: string | null;
+  district_id?: string | null;
 }
 
 export function signToken(payload: JWTPayload): string {

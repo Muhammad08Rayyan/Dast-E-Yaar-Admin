@@ -28,21 +28,12 @@ interface District {
   _id: string;
   name: string;
   code: string;
-  kam_id: { _id: string; name: string; email: string } | null;
   status: string;
   created_at: string;
 }
 
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  role: string;
-}
-
 export default function DistrictsPage() {
   const [districts, setDistricts] = useState<District[]>([]);
-  const [kams, setKams] = useState<User[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -58,7 +49,6 @@ export default function DistrictsPage() {
   const [formData, setFormData] = useState({
     name: '',
     code: '',
-    kam_id: '',
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -104,32 +94,15 @@ export default function DistrictsPage() {
     }
   }, [search, statusFilter]);
 
-  const fetchKAMs = useCallback(async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/users?role=kam&limit=100', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await response.json();
-      if (data.success) {
-        setKams(data.data.users);
-      }
-    } catch (error) {
-      console.error('Error fetching KAMs:', error);
-    }
-  }, []);
-
   useEffect(() => {
     fetchCurrentUser();
     fetchDistricts();
-    fetchKAMs();
-  }, [fetchCurrentUser, fetchDistricts, fetchKAMs]);
+  }, [fetchCurrentUser, fetchDistricts]);
 
   const handleCreate = () => {
     setFormData({
       name: '',
       code: '',
-      kam_id: '',
     });
     setFormErrors({});
     setIsCreateOpen(true);
@@ -140,7 +113,6 @@ export default function DistrictsPage() {
     setFormData({
       name: district.name,
       code: district.code,
-      kam_id: district.kam_id?._id || '',
     });
     setFormErrors({});
     setIsEditOpen(true);
@@ -170,19 +142,13 @@ export default function DistrictsPage() {
       const url = isEditOpen ? `/api/districts/${selectedDistrict?._id}` : '/api/districts';
       const method = isEditOpen ? 'PUT' : 'POST';
 
-      // Prepare data with kam_id as null if empty string
-      const submitData = {
-        ...formData,
-        kam_id: formData.kam_id || null,
-      };
-
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(submitData),
+        body: JSON.stringify(formData),
       });
 
       const data = await response.json();
@@ -284,7 +250,7 @@ export default function DistrictsPage() {
                 <TableRow>
                   <TableHead className="text-black">District Name</TableHead>
                   <TableHead className="text-black">Code</TableHead>
-                  <TableHead className="text-black">Assigned KAM</TableHead>
+                  <TableHead className="text-black">Status</TableHead>
                   {isSuperAdmin && <TableHead className="text-black">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
@@ -298,14 +264,13 @@ export default function DistrictsPage() {
                       </code>
                     </TableCell>
                     <TableCell>
-                      {district.kam_id ? (
-                        <div>
-                          <div className="font-medium text-black">{district.kam_id.name}</div>
-                          <div className="text-sm text-black">{district.kam_id.email}</div>
-                        </div>
-                      ) : (
-                        <span className="text-black text-sm">Not assigned</span>
-                      )}
+                      <span className={`px-2 py-1 rounded text-xs ${
+                        district.status === 'active' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {district.status}
+                      </span>
                     </TableCell>
                     {isSuperAdmin && (
                       <TableCell>
@@ -371,21 +336,7 @@ export default function DistrictsPage() {
                   placeholder="e.g., LHE-GLB"
                 />
                 {formErrors.code && <p className="text-red-500 text-sm mt-1">{formErrors.code}</p>}
-              </div>
-
-              <div>
-                <Label>Assigned KAM</Label>
-                <Select
-                  value={formData.kam_id}
-                  onChange={(e) => setFormData({ ...formData, kam_id: e.target.value })}
-                >
-                  <option value="">No KAM Assigned</option>
-                  {kams.map((kam) => (
-                    <option key={kam._id} value={kam._id}>
-                      {kam.name} ({kam.email})
-                    </option>
-                  ))}
-                </Select>
+                <p className="text-xs text-gray-600 mt-1">A unique code to identify this district</p>
               </div>
             </div>
 

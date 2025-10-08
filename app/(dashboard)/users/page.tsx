@@ -31,7 +31,8 @@ interface User {
   email: string;
   role: string;
   status: string;
-  assigned_district: { _id: string; name: string; code: string } | null;
+  team_id: { _id: string; name: string } | null;
+  district_id: { _id: string; name: string; code: string } | null;
   created_at: string;
 }
 
@@ -41,12 +42,18 @@ interface District {
   code: string;
 }
 
+interface Team {
+  _id: string;
+  name: string;
+  district_id: { _id: string; name: string };
+}
+
 export default function KAMsPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
   
   // Dialog states
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -59,8 +66,8 @@ export default function KAMsPage() {
     name: '',
     email: '',
     password: '',
-    assigned_district: '',
-    status: 'active',
+    team_id: '',
+    district_id: '',
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -71,7 +78,6 @@ export default function KAMsPage() {
       const params = new URLSearchParams();
       params.append('role', 'kam');
       if (search) params.append('search', search);
-      if (statusFilter) params.append('status', statusFilter);
       params.append('limit', '100'); // Get more users
 
       const response = await fetch(`/api/users?${params}`, {
@@ -90,7 +96,7 @@ export default function KAMsPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, statusFilter]);
+  }, [search]);
 
   const fetchDistricts = useCallback(async () => {
     try {
@@ -107,6 +113,24 @@ export default function KAMsPage() {
     }
   }, []);
 
+  const fetchTeams = useCallback(async (districtId?: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      const url = districtId 
+        ? `/api/teams/by-district/${districtId}`
+        : '/api/teams?status=active&limit=100';
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      if (data.success) {
+        setTeams(data.data.teams);
+      }
+    } catch (error) {
+      console.error('Error fetching teams:', error);
+    }
+  }, []);
+
   useEffect(() => {
     fetchUsers();
     fetchDistricts();
@@ -117,8 +141,8 @@ export default function KAMsPage() {
       name: '',
       email: '',
       password: '',
-      assigned_district: '',
-      status: 'active',
+      team_id: '',
+      district_id: '',
     });
     setFormErrors({});
     setIsCreateOpen(true);
@@ -130,10 +154,14 @@ export default function KAMsPage() {
       name: user.name,
       email: user.email,
       password: '',
-      assigned_district: user.assigned_district?._id || '',
-      status: user.status,
+      team_id: user.team_id?._id || '',
+      district_id: user.district_id?._id || '',
     });
     setFormErrors({});
+    // Fetch teams for the selected district
+    if (user.district_id?._id) {
+      fetchTeams(user.district_id._id);
+    }
     setIsEditOpen(true);
   };
 
@@ -147,7 +175,8 @@ export default function KAMsPage() {
     if (!formData.name.trim()) errors.name = 'Name is required';
     if (!formData.email.trim()) errors.email = 'Email is required';
     if (isCreateOpen && !formData.password) errors.password = 'Password is required';
-    if (!formData.assigned_district) errors.assigned_district = 'District is required';
+    if (!formData.district_id) errors.district_id = 'District is required';
+    if (!formData.team_id) errors.team_id = 'Team is required';
     
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -242,7 +271,7 @@ export default function KAMsPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-black">Key Account Managers</h1>
-          <p className="text-black">Manage KAMs and their district assignments</p>
+          <p className="text-black">Manage KAMs and their team & district assignments</p>
         </div>
         <Button onClick={handleCreate}>
           <Plus className="h-4 w-4 mr-2" />
@@ -263,11 +292,6 @@ export default function KAMsPage() {
                 className="pl-10"
               />
             </div>
-            <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-              <option value="">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </Select>
           </div>
         </CardContent>
       </Card>
@@ -289,8 +313,8 @@ export default function KAMsPage() {
                 <TableRow>
                   <TableHead className="text-black">Name</TableHead>
                   <TableHead className="text-black">Email</TableHead>
-                  <TableHead className="text-black">Assigned District</TableHead>
-                  <TableHead className="text-black">Status</TableHead>
+                  <TableHead className="text-black">Team</TableHead>
+                  <TableHead className="text-black">District</TableHead>
                   <TableHead className="text-black">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -300,24 +324,21 @@ export default function KAMsPage() {
                     <TableCell className="font-medium text-black">{user.name}</TableCell>
                     <TableCell className="text-black">{user.email}</TableCell>
                     <TableCell>
-                      {user.assigned_district ? (
-                        <div>
-                          <div className="font-medium text-black">{user.assigned_district.name}</div>
-                          <div className="text-sm text-black">{user.assigned_district.code}</div>
-                        </div>
+                      {user.team_id ? (
+                        <span className="font-medium text-black">{user.team_id.name}</span>
                       ) : (
-                        <span className="text-black">Not assigned</span>
+                        <span className="text-gray-500 italic">Not assigned</span>
                       )}
                     </TableCell>
                     <TableCell>
-                      <button
-                        onClick={() => toggleStatus(user)}
-                        className="cursor-pointer"
-                      >
-                        <Badge variant={user.status === 'active' ? 'success' : 'default'}>
-                          {user.status}
-                        </Badge>
-                      </button>
+                      {user.district_id ? (
+                        <div>
+                          <div className="font-medium text-black">{user.district_id.name}</div>
+                          <div className="text-sm text-gray-600">{user.district_id.code}</div>
+                        </div>
+                      ) : (
+                        <span className="text-gray-500 italic">Not assigned</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
@@ -393,10 +414,18 @@ export default function KAMsPage() {
               </div>
 
               <div>
-                <Label required>Assigned District</Label>
+                <Label required>District</Label>
                 <Select
-                  value={formData.assigned_district}
-                  onChange={(e) => setFormData({ ...formData, assigned_district: e.target.value })}
+                  value={formData.district_id}
+                  onChange={(e) => {
+                    const districtId = e.target.value;
+                    setFormData({ ...formData, district_id: districtId, team_id: '' });
+                    if (districtId) {
+                      fetchTeams(districtId);
+                    } else {
+                      setTeams([]);
+                    }
+                  }}
                 >
                   <option value="">Select District</option>
                   {districts.map((district) => (
@@ -405,20 +434,27 @@ export default function KAMsPage() {
                     </option>
                   ))}
                 </Select>
-                {formErrors.assigned_district && <p className="text-red-500 text-sm mt-1">{formErrors.assigned_district}</p>}
-                <p className="text-xs text-black mt-1">Each KAM is assigned to one district</p>
+                {formErrors.district_id && <p className="text-red-500 text-sm mt-1">{formErrors.district_id}</p>}
               </div>
 
               <div>
-                <Label required>Status</Label>
+                <Label required>Team</Label>
                 <Select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  value={formData.team_id}
+                  onChange={(e) => setFormData({ ...formData, team_id: e.target.value })}
+                  disabled={!formData.district_id}
                 >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
+                  <option value="">Select Team</option>
+                  {teams.map((team) => (
+                    <option key={team._id} value={team._id}>
+                      {team.name}
+                    </option>
+                  ))}
                 </Select>
+                {formErrors.team_id && <p className="text-red-500 text-sm mt-1">{formErrors.team_id}</p>}
+                <p className="text-xs text-gray-600 mt-1">Each KAM is assigned to one team. Select district first.</p>
               </div>
+
             </div>
 
             <DialogFooter>

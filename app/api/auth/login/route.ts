@@ -41,7 +41,8 @@ export async function POST(req: NextRequest) {
       userId: user._id.toString(),
       email: user.email,
       role: user.role,
-      assigned_district: user.assigned_district ? user.assigned_district.toString() : null,
+      team_id: user.team_id ? user.team_id.toString() : null,
+      district_id: user.district_id ? user.district_id.toString() : null,
     });
 
     // Return user data and token
@@ -52,7 +53,8 @@ export async function POST(req: NextRequest) {
           email: user.email,
           name: user.name,
           role: user.role,
-          assigned_district: user.assigned_district,
+          team_id: user.team_id,
+          district_id: user.district_id,
         },
         token,
       },

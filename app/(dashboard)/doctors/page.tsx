@@ -33,6 +33,7 @@ interface Doctor {
   phone: string;
   pmdc_number: string;
   specialty: string;
+  team_id?: { _id: string; name: string };
   district_id: { _id: string; name: string; code: string };
   kam_id: { _id: string; name: string; email: string } | null;
   status: string;
@@ -45,10 +46,16 @@ interface District {
   code: string;
 }
 
+interface Team {
+  _id: string;
+  name: string;
+  district_id: { _id: string; name: string };
+}
+
 export default function DoctorsPage() {
   const router = useRouter();
   const [doctors, setDoctors] = useState<Doctor[]>([]);
-  const [districts, setDistricts] = useState<District[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState('');
@@ -68,7 +75,7 @@ export default function DoctorsPage() {
     phone: '',
     pmdc_number: '',
     specialty: '',
-    district_id: '',
+    team_id: '',
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -88,18 +95,18 @@ export default function DoctorsPage() {
     }
   }, []);
 
-  const fetchDistricts = useCallback(async () => {
+  const fetchTeams = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/districts?status=active&limit=100', {
+      const response = await fetch('/api/teams?status=active&limit=100', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
       if (data.success) {
-        setDistricts(data.data.districts || []);
+        setTeams(data.data.teams || []);
       }
     } catch (error) {
-      console.error('Error fetching districts:', error);
+      console.error('Error fetching teams:', error);
     }
   }, []);
 
@@ -138,9 +145,9 @@ export default function DoctorsPage() {
 
   useEffect(() => {
     fetchCurrentUser();
-    fetchDistricts();
+    fetchTeams();
     fetchDoctors();
-  }, [fetchCurrentUser, fetchDistricts, fetchDoctors]);
+  }, [fetchCurrentUser, fetchTeams, fetchDoctors]);
 
   const handleCreate = () => {
     setFormData({
@@ -150,7 +157,7 @@ export default function DoctorsPage() {
       phone: '',
       pmdc_number: '',
       specialty: '',
-      district_id: '',
+      team_id: '',
     });
     setFormErrors({});
     setIsCreateOpen(true);
@@ -165,7 +172,7 @@ export default function DoctorsPage() {
       phone: doctor.phone,
       pmdc_number: doctor.pmdc_number,
       specialty: doctor.specialty,
-      district_id: doctor.district_id._id,
+      team_id: doctor.team_id?._id || '',
     });
     setFormErrors({});
     setIsEditOpen(true);
@@ -184,7 +191,7 @@ export default function DoctorsPage() {
     if (!formData.phone.trim()) errors.phone = 'Phone is required';
     if (!formData.pmdc_number.trim()) errors.pmdc_number = 'PMDC number is required';
     if (!formData.specialty.trim()) errors.specialty = 'Specialty is required';
-    if (!formData.district_id) errors.district_id = 'District is required';
+    if (!formData.team_id) errors.team_id = 'Team is required';
     
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -495,19 +502,19 @@ export default function DoctorsPage() {
               </div>
 
               <div>
-                <Label required>District</Label>
+                <Label required>Team</Label>
                 <Select
-                  value={formData.district_id}
-                  onChange={(e) => setFormData({ ...formData, district_id: e.target.value })}
+                  value={formData.team_id}
+                  onChange={(e) => setFormData({ ...formData, team_id: e.target.value })}
                 >
-                  <option value="">Select District</option>
-                  {districts.map((district) => (
-                    <option key={district._id} value={district._id}>
-                      {district.name} ({district.code})
+                  <option value="">Select Team</option>
+                  {teams.map((team) => (
+                    <option key={team._id} value={team._id}>
+                      {team.name} - {team.district_id.name}
                     </option>
                   ))}
                 </Select>
-                {formErrors.district_id && <p className="text-red-500 text-sm mt-1">{formErrors.district_id}</p>}
+                {formErrors.team_id && <p className="text-red-500 text-sm mt-1">{formErrors.team_id}</p>}
               </div>
             </div>
 
@@ -548,6 +555,7 @@ export default function DoctorsPage() {
               variant="outline"
               onClick={() => setIsDeleteOpen(false)}
               disabled={submitting}
+              className="text-black"
             >
               Cancel
             </Button>

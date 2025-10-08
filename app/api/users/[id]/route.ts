@@ -27,7 +27,8 @@ export async function GET(
 
     const user = await User.findById(id)
       .select('-password')
-      .populate('assigned_district', 'name code');
+      .populate('team_id', 'name')
+      .populate('district_id', 'name code');
 
     if (!user) {
       return errorResponse('User not found', 404);
@@ -60,7 +61,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { email, password, name, role, assigned_district, status } = body;
+    const { email, password, name, role, team_id, district_id, status } = body;
 
     const user = await User.findById(id);
     if (!user) {
@@ -81,9 +82,16 @@ export async function PUT(
     if (role && ['super_admin', 'kam'].includes(role)) {
       user.role = role;
     }
-    if (assigned_district !== undefined) {
-      user.assigned_district = role === 'kam' ? assigned_district : null;
+    
+    // Handle team and district assignment for KAM
+    const oldTeamId = user.team_id?.toString();
+    if (team_id !== undefined) {
+      user.team_id = role === 'kam' ? team_id : null;
     }
+    if (district_id !== undefined) {
+      user.district_id = role === 'kam' ? district_id : null;
+    }
+    
     if (status && ['active', 'inactive'].includes(status)) {
       user.status = status;
     }
@@ -95,10 +103,21 @@ export async function PUT(
 
     await user.save();
 
-    // Populate district and remove password from response
+    // If team changed and user is KAM, update all doctors in the new team
+    const newTeamId = user.team_id?.toString();
+    if (role === 'kam' && newTeamId && newTeamId !== oldTeamId) {
+      const Doctor = (await import('@/lib/models/Doctor')).default;
+      await Doctor.updateMany(
+        { team_id: newTeamId },
+        { kam_id: user._id }
+      );
+    }
+
+    // Populate team and district, remove password from response
     const updatedUser = await User.findById(id)
       .select('-password')
-      .populate('assigned_district', 'name code');
+      .populate('team_id', 'name')
+      .populate('district_id', 'name code');
 
     return successResponse({ user: updatedUser }, 'User updated successfully');
   } catch (error: any) {

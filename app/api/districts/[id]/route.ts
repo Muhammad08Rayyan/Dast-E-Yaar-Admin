@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import { authMiddleware } from '@/lib/auth/middleware';
 import { connectDB } from '@/lib/db/connection';
 import District from '@/lib/models/District';
+import Team from '@/lib/models/Team';
+import User from '@/lib/models/User';
 import { successResponse, errorResponse } from '@/lib/utils/response';
 import mongoose from 'mongoose';
 
@@ -24,8 +26,7 @@ export async function GET(
       return errorResponse('Invalid district ID', 400);
     }
 
-    const district = await District.findById(id)
-      .populate('kam_id', 'name email');
+    const district = await District.findById(id);
 
     if (!district) {
       return errorResponse('District not found', 404);
@@ -58,7 +59,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { name, code, kam_id, status } = body;
+    const { name, code, status } = body;
 
     const district = await District.findById(id);
     if (!district) {
@@ -76,15 +77,13 @@ export async function PUT(
 
     // Update fields
     if (name) district.name = name;
-    if (kam_id !== undefined) district.kam_id = kam_id || null;
     if (status && ['active', 'inactive'].includes(status)) {
       district.status = status;
     }
 
     await district.save();
 
-    const updatedDistrict = await District.findById(id)
-      .populate('kam_id', 'name email');
+    const updatedDistrict = await District.findById(id);
 
     return successResponse(
       { district: updatedDistrict },
@@ -115,10 +114,30 @@ export async function DELETE(
       return errorResponse('Invalid district ID', 400);
     }
 
-    const district = await District.findByIdAndDelete(id);
+    const district = await District.findById(id);
     if (!district) {
       return errorResponse('District not found', 404);
     }
+
+    // Check for assigned teams
+    const teamsCount = await Team.countDocuments({ district_id: id });
+    if (teamsCount > 0) {
+      return errorResponse(
+        `Cannot delete district. Please delete all ${teamsCount} assigned team(s) first.`,
+        400
+      );
+    }
+
+    // Check for assigned KAMs
+    const kamsCount = await User.countDocuments({ district_id: id, role: 'kam' });
+    if (kamsCount > 0) {
+      return errorResponse(
+        `Cannot delete district. Please delete all ${kamsCount} assigned KAM(s) first.`,
+        400
+      );
+    }
+
+    await District.findByIdAndDelete(id);
 
     return successResponse(null, 'District deleted successfully');
   } catch (error: any) {

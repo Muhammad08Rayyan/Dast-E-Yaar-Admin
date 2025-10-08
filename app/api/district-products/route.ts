@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
-    const districtId = authResult.user?.assigned_district;
+    const districtId = authResult.user?.district_id;
     if (!districtId) {
       return errorResponse('No district assigned to this KAM', 400);
     }

@@ -34,7 +34,6 @@ export async function GET(request: NextRequest) {
     }
 
     const districts = await District.find(query)
-      .populate('kam_id', 'name email')
       .sort({ name: 1 })
       .skip(skip)
       .limit(limit);
@@ -67,7 +66,7 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     const body = await request.json();
-    const { name, code, kam_id, status } = body;
+    const { name, code, status } = body;
 
     // Validate required fields
     if (!name || !code) {
@@ -84,15 +83,11 @@ export async function POST(request: NextRequest) {
     const district = await District.create({
       name,
       code: code.toUpperCase(),
-      kam_id: kam_id || null,
       status: status || 'active'
     });
 
-    const populatedDistrict = await District.findById(district._id)
-      .populate('kam_id', 'name email');
-
     return successResponse(
-      { district: populatedDistrict },
+      { district },
       'District created successfully',
       201
     );

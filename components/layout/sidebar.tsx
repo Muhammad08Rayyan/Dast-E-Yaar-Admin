@@ -12,6 +12,8 @@ import {
   Package,
   FileText,
   ShoppingCart,
+  UsersRound,
+  BarChart3,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -26,12 +28,14 @@ export function Sidebar({ userRole }: SidebarProps) {
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["super_admin"] },
     { name: "Districts", href: "/districts", icon: MapPin, roles: ["super_admin"] },
+    { name: "Teams", href: "/teams", icon: UsersRound, roles: ["super_admin"] },
     { name: "KAMs", href: "/users", icon: Users, roles: ["super_admin"] },
     { name: "Doctors", href: "/doctors", icon: UserCog, roles: ["super_admin", "kam"] },
     { name: "Patients", href: "/patients", icon: Users, roles: ["super_admin"] },
     { name: "Prescriptions", href: "/prescriptions", icon: FileText, roles: ["super_admin"] },
     { name: "Orders", href: "/orders", icon: ShoppingCart, roles: ["super_admin"] },
     { name: "Products", href: "/products", icon: Package, roles: ["super_admin"] },
+    { name: "Reports", href: "/reports", icon: BarChart3, roles: ["super_admin", "kam"] },
   ];
 
   const filteredNavigation = navigation.filter((item) => item.roles.includes(userRole));

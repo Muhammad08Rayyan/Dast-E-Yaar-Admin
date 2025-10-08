@@ -40,7 +40,8 @@ export async function GET(request: NextRequest) {
 
     const users = await User.find(query)
       .select('-password')
-      .populate('assigned_district', 'name code')
+      .populate('team_id', 'name')
+      .populate('district_id', 'name code')
       .sort({ created_at: -1 })
       .skip(skip)
       .limit(limit);
@@ -73,16 +74,16 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     const body = await request.json();
-    const { email, password, name, role, assigned_district, status } = body;
+    const { email, password, name, role, team_id, district_id, status } = body;
 
     // Validate required fields
     if (!email || !password || !name || !role) {
       return errorResponse('Email, password, name, and role are required', 400);
     }
 
-    // For KAM role, district is required
-    if (role === 'kam' && !assigned_district) {
-      return errorResponse('District is required for KAM role', 400);
+    // For KAM role, team and district are required
+    if (role === 'kam' && (!team_id || !district_id)) {
+      return errorResponse('Team and district are required for KAM role', 400);
     }
 
     // Check if email already exists
@@ -105,14 +106,26 @@ export async function POST(request: NextRequest) {
       password: hashedPassword,
       name,
       role,
-      assigned_district: role === 'kam' ? assigned_district : null,
+      team_id: role === 'kam' ? team_id : null,
+      district_id: role === 'kam' ? district_id : null,
       status: status || 'active'
     });
 
-    // Populate district and remove password from response
+    // If KAM, update all doctors in this team with the new KAM
+    if (role === 'kam' && team_id) {
+      await connectDB();
+      const Doctor = (await import('@/lib/models/Doctor')).default;
+      await Doctor.updateMany(
+        { team_id: team_id },
+        { kam_id: user._id }
+      );
+    }
+
+    // Populate team and district, remove password from response
     const populatedUser = await User.findById(user._id)
       .select('-password')
-      .populate('assigned_district', 'name code');
+      .populate('team_id', 'name')
+      .populate('district_id', 'name code');
 
     return successResponse(
       { user: populatedUser },

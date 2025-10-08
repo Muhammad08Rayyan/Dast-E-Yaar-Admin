@@ -1,6 +1,7 @@
 // Import all models to ensure they're registered with Mongoose
 // This prevents "Schema hasn't been registered" errors
 import District from './District';
+import Team from './Team';
 import Doctor from './Doctor';
 import User from './User';
 import Product from './Product';
@@ -12,6 +13,7 @@ import Prescription from './Prescription';
 // Export all models
 export {
   District,
+  Team,
   Doctor,
   User,
   Product,
@@ -25,6 +27,7 @@ export {
 export function ensureModelsLoaded() {
   return {
     District: District.modelName,
+    Team: Team.modelName,
     Doctor: Doctor.modelName,
     User: User.modelName,
     Product: Product.modelName,

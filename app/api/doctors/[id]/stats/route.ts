@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { authMiddleware } from '@/lib/auth/middleware';
 import { connectDB } from '@/lib/db/connection';
 import Doctor from '@/lib/models/Doctor';
+import User from '@/lib/models/User';
 import Prescription from '@/lib/models/Prescription';
 import Order from '@/lib/models/Order';
 import { successResponse, errorResponse } from '@/lib/utils/response';
@@ -31,10 +32,16 @@ export async function GET(
       return errorResponse('Doctor not found', 404);
     }
 
-    // KAM scoping
+    // KAM scoping: Check if KAM can access this doctor
     if (authResult.user?.role === 'kam') {
-      if (!authResult.user.assigned_district || 
-          authResult.user.assigned_district.toString() !== doctor.district_id.toString()) {
+      // Get KAM's team
+      const kamUser = await User.findById(authResult.user.userId);
+      if (kamUser && kamUser.team_id) {
+        // Check if doctor belongs to KAM's team
+        if (!doctor.team_id || doctor.team_id.toString() !== kamUser.team_id.toString()) {
+          return errorResponse('You do not have access to this doctor', 403);
+        }
+      } else {
         return errorResponse('You do not have access to this doctor', 403);
       }
     }
@@ -46,7 +53,7 @@ export async function GET(
     // Recent prescriptions
     const recentPrescriptions = await Prescription.find({ doctor_id: id })
       .populate('patient_id', 'name mrn')
-      .sort({ created_at: -1 })
+      .sort({ createdAt: -1 })
       .limit(10);
 
     // Prescription status breakdown
