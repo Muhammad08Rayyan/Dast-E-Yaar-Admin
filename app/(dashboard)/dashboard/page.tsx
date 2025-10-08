@@ -412,24 +412,15 @@ export default function DashboardPage() {
                     className="flex items-start justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                   >
                     <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <p className="font-medium text-black text-sm">
-                          {activity.prescriptionNumber}
-                        </p>
-                        {getStatusBadge(activity.status)}
-                      </div>
+                      <p className="font-medium text-black text-sm">
+                        {activity.prescriptionNumber}
+                      </p>
                       <p className="text-sm text-gray-600 mt-1">
                         Patient: {activity.patient.name} ({activity.patient.mrn})
                       </p>
                       <p className="text-sm text-gray-600">
                         Doctor: {activity.doctor.name}
                       </p>
-                      <div className="flex items-center justify-between mt-2">
-                        <p className="text-xs text-gray-500">
-                          {activity.medicationCount} medication{activity.medicationCount !== 1 ? "s" : ""}
-                        </p>
-                        <p className="text-xs text-gray-400">{formatDate(activity.createdAt)}</p>
-                      </div>
                     </div>
                   </div>
                 ))
@@ -470,12 +461,9 @@ export default function DashboardPage() {
                       <p className="text-sm text-gray-600 mt-1">
                         Patient: {order.patient.name} ({order.patient.mrn})
                       </p>
-                      <div className="flex items-center justify-between mt-2">
-                        <p className="text-sm font-semibold text-[#D32F2F]">
-                          PKR {order.totalAmount.toLocaleString()}
-                        </p>
-                        <p className="text-xs text-gray-400">{formatDate(order.createdAt)}</p>
-                      </div>
+                      <p className="text-sm font-semibold text-[#D32F2F] mt-2">
+                        PKR {order.totalAmount.toLocaleString()}
+                      </p>
                     </div>
                   </div>
                 ))
