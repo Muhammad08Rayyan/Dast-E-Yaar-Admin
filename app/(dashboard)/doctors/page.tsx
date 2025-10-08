@@ -370,7 +370,7 @@ export default function DoctorsPage() {
                           size="sm"
                           onClick={() => router.push(`/doctors/${doctor._id}`)}
                         >
-                          <Eye className="h-4 w-4" />
+                          <Eye className="h-4 w-4 text-black" />
                         </Button>
                         {currentUserRole === 'super_admin' && (
                           <>
@@ -379,7 +379,7 @@ export default function DoctorsPage() {
                               size="sm"
                               onClick={() => handleEdit(doctor)}
                             >
-                              <Edit className="h-4 w-4" />
+                              <Edit className="h-4 w-4 text-black" />
                             </Button>
                             <Button
                               variant="ghost"
@@ -411,7 +411,7 @@ export default function DoctorsPage() {
         }} className="max-w-2xl">
           <form onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>{isEditOpen ? 'Edit Doctor' : 'Create New Doctor'}</DialogTitle>
+              <DialogTitle className="text-black">{isEditOpen ? 'Edit Doctor' : 'Create New Doctor'}</DialogTitle>
               <DialogDescription>
                 {isEditOpen ? 'Update doctor information' : 'Add a new doctor to the system'}
               </DialogDescription>

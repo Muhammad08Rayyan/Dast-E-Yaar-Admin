@@ -109,3 +109,42 @@ export async function authMiddleware(
   }
 }
 
+// Alias for verifyAuth (same as authMiddleware but returns authenticated instead of authorized)
+export async function verifyAuth(
+  req: NextRequest,
+  allowedRoles?: Array<'super_admin' | 'kam'>
+): Promise<{ authenticated: boolean; message: string; user?: JWTPayload }> {
+  try {
+    const authHeader = req.headers.get('authorization');
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return {
+        authenticated: false,
+        message: 'No token provided',
+      };
+    }
+
+    const token = authHeader.substring(7);
+    const payload = verifyToken(token);
+    
+    // Check role authorization
+    if (allowedRoles && !allowedRoles.includes(payload.role)) {
+      return {
+        authenticated: false,
+        message: 'Insufficient permissions',
+      };
+    }
+
+    return {
+      authenticated: true,
+      message: 'Authorized',
+      user: payload,
+    };
+  } catch (error: any) {
+    return {
+      authenticated: false,
+      message: error.message || 'Authentication failed',
+    };
+  }
+}
+

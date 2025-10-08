@@ -352,7 +352,7 @@ export default function DistrictsPage() {
                             size="sm"
                             onClick={() => handleEdit(district)}
                           >
-                            <Edit className="h-4 w-4" />
+                            <Edit className="h-4 w-4 text-black" />
                           </Button>
                           <Button
                             variant="ghost"
@@ -383,7 +383,7 @@ export default function DistrictsPage() {
         }}>
           <form onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>{isEditOpen ? 'Edit District' : 'Create New District'}</DialogTitle>
+              <DialogTitle className="text-black">{isEditOpen ? 'Edit District' : 'Create New District'}</DialogTitle>
               <DialogDescription>
                 {isEditOpen ? 'Update district information' : 'Add a new district to the system'}
               </DialogDescription>
@@ -446,6 +446,7 @@ export default function DistrictsPage() {
                   setIsEditOpen(false);
                 }}
                 disabled={submitting}
+                className="text-black"
               >
                 Cancel
               </Button>
@@ -473,6 +474,7 @@ export default function DistrictsPage() {
               variant="outline"
               onClick={() => setIsDeleteOpen(false)}
               disabled={submitting}
+              className="text-black"
             >
               Cancel
             </Button>

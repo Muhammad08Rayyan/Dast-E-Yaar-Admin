@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
-import { Header } from "@/components/layout/header";
+// import { Header } from "@/components/layout/header"; // Removed - no real use
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -59,7 +59,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header user={user} />
+        {/* Header removed - no real use */}
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>

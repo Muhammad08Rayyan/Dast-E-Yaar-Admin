@@ -128,8 +128,9 @@ export default function DoctorDetailPage({ params }: { params: { id: string } })
             variant="ghost"
             size="sm"
             onClick={() => router.push('/doctors')}
+            className="text-black"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-4 w-4 mr-2 text-black" />
             Back
           </Button>
           <div>
@@ -146,7 +147,7 @@ export default function DoctorDetailPage({ params }: { params: { id: string } })
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Contact Information</CardTitle>
+            <CardTitle className="text-black">Contact Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center space-x-3">
@@ -175,7 +176,7 @@ export default function DoctorDetailPage({ params }: { params: { id: string } })
 
         <Card>
           <CardHeader>
-            <CardTitle>Assignment Details</CardTitle>
+            <CardTitle className="text-black">Assignment Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
@@ -212,7 +213,7 @@ export default function DoctorDetailPage({ params }: { params: { id: string } })
       {/* Statistics */}
       {stats && (
         <div>
-          <h2 className="text-lg font-semibold mb-4">Performance Statistics</h2>
+          <h2 className="text-lg font-semibold mb-4 text-black">Performance Statistics</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card>
               <CardContent className="pt-6">
@@ -272,7 +273,7 @@ export default function DoctorDetailPage({ params }: { params: { id: string } })
       {/* Recent Prescriptions */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Prescriptions</CardTitle>
+          <CardTitle className="text-black">Recent Prescriptions</CardTitle>
         </CardHeader>
         <CardContent>
           {recentPrescriptions.length === 0 ? (

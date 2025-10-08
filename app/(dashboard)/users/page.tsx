@@ -326,7 +326,7 @@ export default function KAMsPage() {
                           size="sm"
                           onClick={() => handleEdit(user)}
                         >
-                          <Edit className="h-4 w-4" />
+                          <Edit className="h-4 w-4 text-black" />
                         </Button>
                         <Button
                           variant="ghost"
@@ -356,7 +356,7 @@ export default function KAMsPage() {
         }}>
           <form onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>{isEditOpen ? 'Edit KAM' : 'Create New KAM'}</DialogTitle>
+              <DialogTitle className="text-black">{isEditOpen ? 'Edit KAM' : 'Create New KAM'}</DialogTitle>
               <DialogDescription>
                 {isEditOpen ? 'Update KAM information' : 'Add a new Key Account Manager'}
               </DialogDescription>
@@ -430,6 +430,7 @@ export default function KAMsPage() {
                   setIsEditOpen(false);
                 }}
                 disabled={submitting}
+                className="text-black"
               >
                 Cancel
               </Button>
@@ -457,6 +458,7 @@ export default function KAMsPage() {
               variant="outline"
               onClick={() => setIsDeleteOpen(false)}
               disabled={submitting}
+              className="text-black"
             >
               Cancel
             </Button>

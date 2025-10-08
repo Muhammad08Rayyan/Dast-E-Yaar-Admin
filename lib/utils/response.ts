@@ -28,3 +28,24 @@ export function errorResponse(
   );
 }
 
+export function apiResponse(
+  success: boolean,
+  message: string,
+  data: any = null,
+  error: any = null
+) {
+  if (success) {
+    return {
+      success: true,
+      message,
+      data,
+    };
+  } else {
+    return {
+      success: false,
+      message,
+      error,
+    };
+  }
+}
+

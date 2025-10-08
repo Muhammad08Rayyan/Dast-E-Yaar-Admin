@@ -84,7 +84,8 @@ export function Sidebar({ userRole }: SidebarProps) {
 
       {/* Settings & Logout */}
       <div className="border-t border-gray-800 p-2 space-y-1">
-        {userRole === "super_admin" && (
+        {/* Settings - Commented for now */}
+        {/* {userRole === "super_admin" && (
           <Link
             href="/settings"
             className="group flex items-center px-3 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-800 hover:text-white transition-colors"
@@ -92,7 +93,7 @@ export function Sidebar({ userRole }: SidebarProps) {
             <Settings className="mr-3 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-white" />
             Settings
           </Link>
-        )}
+        )} */}
         <button
           onClick={() => {
             localStorage.removeItem("token");

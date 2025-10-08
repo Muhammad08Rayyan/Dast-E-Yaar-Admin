@@ -1,0 +1,100 @@
+import { NextRequest, NextResponse } from 'next/server';
+import connectDB from '@/lib/db/connection';
+import { User, Doctor, Prescription, Order, Patient, Product, District } from '@/lib/models';
+import { apiResponse } from '@/lib/utils/response';
+import { verifyAuth } from '@/lib/auth/middleware';
+
+export async function GET(req: NextRequest) {
+  try {
+    // Verify authentication
+    const authResult = await verifyAuth(req);
+    if (!authResult.authenticated || !authResult.user) {
+      return NextResponse.json(
+        apiResponse(false, 'Unauthorized', null, { code: 'UNAUTHORIZED' }),
+        { status: 401 }
+      );
+    }
+
+    // Only super admin can view dashboard stats
+    if (authResult.user.role !== 'super_admin') {
+      return NextResponse.json(
+        apiResponse(false, 'Access denied', null, { code: 'FORBIDDEN' }),
+        { status: 403 }
+      );
+    }
+
+    // Connect to database
+    await connectDB();
+
+    // Get all statistics in parallel
+    const [
+      totalUsers,
+      totalDoctors,
+      totalPrescriptions,
+      totalOrders,
+      totalPatients,
+      totalProducts,
+      totalDistricts,
+      pendingOrders,
+      fulfilledOrders,
+      activeOrders,
+      activeDoctors,
+      inactiveDoctors,
+    ] = await Promise.all([
+      User.countDocuments(),
+      Doctor.countDocuments(),
+      Prescription.countDocuments(),
+      Order.countDocuments(),
+      Patient.countDocuments(),
+      Product.countDocuments(),
+      District.countDocuments(),
+      Order.countDocuments({ order_status: 'pending' }),
+      Order.countDocuments({ order_status: 'fulfilled' }),
+      Order.countDocuments({ order_status: { $in: ['pending', 'processing'] } }),
+      Doctor.countDocuments({ status: 'active' }),
+      Doctor.countDocuments({ status: 'inactive' }),
+    ]);
+
+    // Calculate order statistics
+    const orderStats = {
+      total: totalOrders,
+      pending: pendingOrders,
+      fulfilled: fulfilledOrders,
+      active: activeOrders,
+      fulfillmentRate: totalOrders > 0 ? ((fulfilledOrders / totalOrders) * 100).toFixed(1) : '0',
+    };
+
+    // Calculate doctor statistics
+    const doctorStats = {
+      total: totalDoctors,
+      active: activeDoctors,
+      inactive: inactiveDoctors,
+      activeRate: totalDoctors > 0 ? ((activeDoctors / totalDoctors) * 100).toFixed(1) : '0',
+    };
+
+    const stats = {
+      users: totalUsers,
+      doctors: doctorStats,
+      prescriptions: totalPrescriptions,
+      orders: orderStats,
+      patients: totalPatients,
+      products: totalProducts,
+      districts: totalDistricts,
+    };
+
+    return NextResponse.json(
+      apiResponse(true, 'Dashboard statistics retrieved successfully', stats),
+      { status: 200 }
+    );
+  } catch (error: any) {
+    console.error('Dashboard stats error:', error);
+    return NextResponse.json(
+      apiResponse(false, 'Failed to fetch dashboard statistics', null, {
+        code: 'INTERNAL_ERROR',
+        message: error.message,
+      }),
+      { status: 500 }
+    );
+  }
+}
+
