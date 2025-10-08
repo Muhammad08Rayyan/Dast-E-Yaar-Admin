@@ -101,11 +101,65 @@ export default function PrescriptionsPage() {
           fulfilled: allPrescriptions.filter((p: Prescription) => p.order_status === "fulfilled").length,
           urgent: allPrescriptions.filter((p: Prescription) => p.priority === "urgent" || p.priority === "emergency").length,
         });
+
+        // Auto-sync order status for prescriptions with active orders
+        if (data.data.prescriptions.length > 0) {
+          syncPrescriptionOrders(data.data.prescriptions);
+        }
       }
     } catch (error) {
       console.error("Error fetching prescriptions:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const syncPrescriptionOrders = async (prescriptionsToSync: Prescription[]) => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      // Only sync prescriptions with active orders (not fulfilled or cancelled)
+      const activePrescriptions = prescriptionsToSync.filter(
+        (p) => p.order_status !== "fulfilled" && p.order_status !== "cancelled"
+      );
+
+      if (activePrescriptions.length === 0) {
+        return; // No orders to sync
+      }
+
+      // Get order IDs from prescriptions
+      const orderIds: string[] = [];
+      for (const prescription of activePrescriptions) {
+        const orderResponse = await fetch(`/api/orders?prescription_id=${prescription._id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const orderData = await orderResponse.json();
+        if (orderData.success && orderData.data.orders.length > 0) {
+          orderIds.push(orderData.data.orders[0]._id);
+        }
+      }
+
+      if (orderIds.length === 0) return;
+
+      // Sync orders
+      const response = await fetch("/api/orders/bulk-sync", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ order_ids: orderIds }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Refresh prescriptions to show updated order status
+        await fetchPrescriptions();
+      }
+    } catch (error) {
+      console.error("Error syncing prescription orders:", error);
+      // Silently fail
     }
   };
 
@@ -219,7 +273,7 @@ export default function PrescriptionsPage() {
             <div className="md:col-span-2">
               <div className="flex gap-2">
                 <Input
-                  placeholder="Search by MRN, diagnosis..."
+                  placeholder="Search by MRN, patient name..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -282,7 +336,6 @@ export default function PrescriptionsPage() {
                     <TableHead className="text-black">Patient</TableHead>
                     <TableHead className="text-black">Doctor</TableHead>
                     <TableHead className="text-black">District</TableHead>
-                    <TableHead className="text-black">Diagnosis</TableHead>
                     <TableHead className="text-black">Priority</TableHead>
                     <TableHead className="text-black">Status</TableHead>
                     <TableHead className="text-black">Date</TableHead>
@@ -306,7 +359,6 @@ export default function PrescriptionsPage() {
                           </div>
                         </TableCell>
                         <TableCell>{prescription.district_id.name}</TableCell>
-                        <TableCell>{prescription.diagnosis || "N/A"}</TableCell>
                         <TableCell>
                           <Badge className={getStatusColor(prescription.priority)}>
                             {prescription.priority}

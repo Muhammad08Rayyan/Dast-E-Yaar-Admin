@@ -31,6 +31,7 @@ interface DashboardStats {
   orders: {
     total: number;
     pending: number;
+    processing: number;
     fulfilled: number;
     active: number;
     fulfillmentRate: string;
@@ -88,6 +89,7 @@ export default function DashboardPage() {
     orders: {
       total: 0,
       pending: 0,
+      processing: 0,
       fulfilled: 0,
       active: 0,
       fulfillmentRate: "0",
@@ -102,10 +104,16 @@ export default function DashboardPage() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchDashboardData();
+    const initDashboard = async () => {
+      await fetchDashboardData();
+      // Auto-sync orders in the background after initial load
+      syncActiveOrders();
+    };
+    initDashboard();
   }, []);
 
   const fetchDashboardData = async () => {
@@ -159,6 +167,53 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const syncActiveOrders = async () => {
+    try {
+      setSyncing(true);
+      const token = localStorage.getItem("token");
+
+      // Get all active (non-fulfilled/non-cancelled) orders to sync
+      const ordersResponse = await fetch("/api/orders?limit=100", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const ordersData = await ordersResponse.json();
+
+      if (ordersData.success && ordersData.data.orders) {
+        // Filter to only sync non-fulfilled and non-cancelled orders
+        const activeOrders = ordersData.data.orders.filter(
+          (o: any) => o.order_status !== 'fulfilled' && o.order_status !== 'cancelled'
+        );
+
+        if (activeOrders.length > 0) {
+          const orderIds = activeOrders.map((o: any) => o._id);
+
+          await fetch("/api/orders/bulk-sync", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ order_ids: orderIds }),
+          });
+
+          // Refresh dashboard data to show updated stats
+          await fetchDashboardData();
+        }
+      }
+    } catch (error) {
+      console.error("Failed to sync orders:", error);
+      // Silently fail - don't disrupt user experience
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    await fetchDashboardData();
+    await syncActiveOrders();
   };
 
   const formatDate = (dateString: string) => {
@@ -289,9 +344,9 @@ export default function DashboardPage() {
             Welcome back! Here&apos;s your complete system overview.
           </p>
         </div>
-        <Button onClick={fetchDashboardData} variant="outline" className="text-black">
-          <Activity className="h-4 w-4 mr-2" />
-          Refresh Data
+        <Button onClick={handleRefresh} disabled={syncing} variant="outline" className="text-black">
+          <Activity className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+          {syncing ? 'Syncing...' : 'Refresh Data'}
         </Button>
       </div>
 
@@ -357,7 +412,7 @@ export default function DashboardPage() {
           <CardTitle className="text-black">Order Status Overview</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-gray-600">Pending Orders</span>
@@ -368,6 +423,21 @@ export default function DashboardPage() {
                   className="bg-orange-600 h-2 rounded-full transition-all"
                   style={{
                     width: `${stats.orders.total > 0 ? (stats.orders.pending / stats.orders.total) * 100 : 0}%`,
+                  }}
+                ></div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-600">Processing Orders</span>
+                <span className="text-2xl font-bold text-blue-600">{stats.orders.processing}</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-blue-600 h-2 rounded-full transition-all"
+                  style={{
+                    width: `${stats.orders.total > 0 ? (stats.orders.processing / stats.orders.total) * 100 : 0}%`,
                   }}
                 ></div>
               </div>

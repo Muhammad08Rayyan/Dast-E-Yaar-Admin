@@ -60,6 +60,7 @@ export default function OrdersPage() {
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
+    processing: 0,
     fulfilled: 0,
     cancelled: 0,
   });
@@ -99,14 +100,68 @@ export default function OrdersPage() {
         setStats({
           total: data.data.pagination.total,
           pending: allOrders.filter((o: Order) => o.order_status === "pending").length,
+          processing: allOrders.filter((o: Order) => o.order_status === "processing").length,
           fulfilled: allOrders.filter((o: Order) => o.order_status === "fulfilled").length,
           cancelled: allOrders.filter((o: Order) => o.order_status === "cancelled").length,
         });
+
+        // Sync orders with Shopify in the background
+        if (data.data.orders.length > 0) {
+          syncOrdersInBackground(data.data.orders);
+        }
       }
     } catch (error) {
       console.error("Error fetching orders:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const syncOrdersInBackground = async (ordersToSync: Order[]) => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      // Only sync active orders (not fulfilled or cancelled)
+      const activeOrders = ordersToSync.filter(
+        (o) => o.order_status !== "fulfilled" && o.order_status !== "cancelled"
+      );
+
+      if (activeOrders.length === 0) {
+        return; // No orders to sync
+      }
+
+      const orderIds = activeOrders.map((o) => o._id);
+
+      const response = await fetch("/api/orders/bulk-sync", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ order_ids: orderIds }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.data.orders) {
+        // Merge synced orders with existing fulfilled/cancelled orders
+        const syncedOrdersMap = new Map(data.data.orders.map((o: Order) => [o._id, o]));
+        const updatedOrders = ordersToSync.map((o) => syncedOrdersMap.get(o._id) || o) as Order[];
+        
+        setOrders(updatedOrders);
+
+        // Recalculate stats with synced data
+        setStats((prevStats) => ({
+          ...prevStats,
+          pending: updatedOrders.filter((o: Order) => o.order_status === "pending").length,
+          processing: updatedOrders.filter((o: Order) => o.order_status === "processing").length,
+          fulfilled: updatedOrders.filter((o: Order) => o.order_status === "fulfilled").length,
+          cancelled: updatedOrders.filter((o: Order) => o.order_status === "cancelled").length,
+        }));
+      }
+    } catch (error) {
+      console.error("Error syncing orders:", error);
+      // Silently fail - user still sees cached data
     }
   };
 
@@ -153,11 +208,13 @@ export default function OrdersPage() {
       {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold text-black">Orders</h1>
-        <p className="text-black mt-1">Manage and track all orders</p>
+        <p className="text-black mt-1">
+          Manage and track all orders. Click on any order to view details and sync with Shopify.
+        </p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-5">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -181,6 +238,20 @@ export default function OrdersPage() {
               </div>
               <div className="bg-yellow-50 p-3 rounded-full">
                 <TrendingUp className="h-6 w-6 text-yellow-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-black">Processing</p>
+                <p className="text-3xl font-bold text-blue-600 mt-2">{stats.processing}</p>
+              </div>
+              <div className="bg-blue-50 p-3 rounded-full">
+                <Package className="h-6 w-6 text-blue-600" />
               </div>
             </div>
           </CardContent>

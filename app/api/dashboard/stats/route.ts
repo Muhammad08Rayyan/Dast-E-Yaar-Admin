@@ -37,6 +37,7 @@ export async function GET(req: NextRequest) {
       totalDistricts,
       totalTeams,
       pendingOrders,
+      processingOrders,
       fulfilledOrders,
       activeOrders,
       activeDoctors,
@@ -53,6 +54,7 @@ export async function GET(req: NextRequest) {
       District.countDocuments(),
       Team.countDocuments(),
       Order.countDocuments({ order_status: 'pending' }),
+      Order.countDocuments({ order_status: 'processing' }),
       Order.countDocuments({ order_status: 'fulfilled' }),
       Order.countDocuments({ order_status: { $in: ['pending', 'processing'] } }),
       Doctor.countDocuments({ status: 'active' }),
@@ -65,6 +67,7 @@ export async function GET(req: NextRequest) {
     const orderStats = {
       total: totalOrders,
       pending: pendingOrders,
+      processing: processingOrders,
       fulfilled: fulfilledOrders,
       active: activeOrders,
       fulfillmentRate: totalOrders > 0 ? ((fulfilledOrders / totalOrders) * 100).toFixed(1) : '0',

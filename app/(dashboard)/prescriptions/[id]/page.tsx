@@ -276,13 +276,6 @@ export default function PrescriptionDetailPage({ params }: { params: { id: strin
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {prescription.diagnosis && (
-            <div>
-              <p className="text-sm font-medium text-black">Diagnosis</p>
-              <p className="text-lg">{prescription.diagnosis}</p>
-            </div>
-          )}
-          
           <div>
             <p className="text-sm font-medium text-black">Prescription</p>
             <div className="mt-2 p-4 bg-gray-50 rounded-lg">

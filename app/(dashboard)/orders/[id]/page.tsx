@@ -67,9 +67,15 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
-    fetchOrder();
+    const initializeOrder = async () => {
+      await fetchOrder();
+      // Sync with Shopify in the background after initial load
+      syncOrderStatus();
+    };
+    initializeOrder();
   }, [params.id]);
 
   const fetchOrder = async () => {
@@ -91,6 +97,30 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
       console.error("Error fetching order:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const syncOrderStatus = async () => {
+    try {
+      setSyncing(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch(`/api/orders/${params.id}/sync`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setOrder(data.data.order);
+      }
+    } catch (error) {
+      console.error("Error syncing order:", error);
+      // Silently fail - don't alert user as we still have cached data
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -163,7 +193,16 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          <Button 
+            variant="outline" 
+            onClick={syncOrderStatus}
+            disabled={syncing}
+            className="gap-2"
+          >
+            <Package className="h-4 w-4" />
+            {syncing ? 'Syncing...' : 'Sync with Shopify'}
+          </Button>
           <Badge className={getStatusColor(order.order_status)}>
             {order.order_status}
           </Badge>
