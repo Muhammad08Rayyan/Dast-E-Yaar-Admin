@@ -6,7 +6,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import {
   Table,
   TableHeader,
@@ -60,7 +59,6 @@ export default function DistrictsPage() {
     name: '',
     code: '',
     kam_id: '',
-    status: 'active',
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -132,7 +130,6 @@ export default function DistrictsPage() {
       name: '',
       code: '',
       kam_id: '',
-      status: 'active',
     });
     setFormErrors({});
     setIsCreateOpen(true);
@@ -144,7 +141,6 @@ export default function DistrictsPage() {
       name: district.name,
       code: district.code,
       kam_id: district.kam_id?._id || '',
-      status: district.status,
     });
     setFormErrors({});
     setIsEditOpen(true);
@@ -174,13 +170,19 @@ export default function DistrictsPage() {
       const url = isEditOpen ? `/api/districts/${selectedDistrict?._id}` : '/api/districts';
       const method = isEditOpen ? 'PUT' : 'POST';
 
+      // Prepare data with kam_id as null if empty string
+      const submitData = {
+        ...formData,
+        kam_id: formData.kam_id || null,
+      };
+
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submitData),
       });
 
       const data = await response.json();
@@ -222,28 +224,6 @@ export default function DistrictsPage() {
       alert('Failed to delete district');
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const toggleStatus = async (district: District) => {
-    const newStatus = district.status === 'active' ? 'inactive' : 'active';
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/districts/${district._id}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        fetchDistricts();
-      }
-    } catch (error) {
-      console.error('Error toggling status:', error);
     }
   };
 
@@ -305,7 +285,6 @@ export default function DistrictsPage() {
                   <TableHead className="text-black">District Name</TableHead>
                   <TableHead className="text-black">Code</TableHead>
                   <TableHead className="text-black">Assigned KAM</TableHead>
-                  <TableHead className="text-black">Status</TableHead>
                   {isSuperAdmin && <TableHead className="text-black">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
@@ -326,22 +305,6 @@ export default function DistrictsPage() {
                         </div>
                       ) : (
                         <span className="text-black text-sm">Not assigned</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {isSuperAdmin ? (
-                        <button
-                          onClick={() => toggleStatus(district)}
-                          className="cursor-pointer"
-                        >
-                          <Badge variant={district.status === 'active' ? 'success' : 'default'}>
-                            {district.status}
-                          </Badge>
-                        </button>
-                      ) : (
-                        <Badge variant={district.status === 'active' ? 'success' : 'default'}>
-                          {district.status}
-                        </Badge>
                       )}
                     </TableCell>
                     {isSuperAdmin && (
@@ -422,17 +385,6 @@ export default function DistrictsPage() {
                       {kam.name} ({kam.email})
                     </option>
                   ))}
-                </Select>
-              </div>
-
-              <div>
-                <Label required>Status</Label>
-                <Select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
                 </Select>
               </div>
             </div>
