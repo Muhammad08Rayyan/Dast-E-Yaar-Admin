@@ -50,6 +50,7 @@ export default function OrdersPage() {
   const [orderStatus, setOrderStatus] = useState("");
   const [financialStatus, setFinancialStatus] = useState("");
   const [fulfillmentStatus, setFulfillmentStatus] = useState("");
+  const [lastSyncTime, setLastSyncTime] = useState<number>(0);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
@@ -105,8 +106,10 @@ export default function OrdersPage() {
           cancelled: allOrders.filter((o: Order) => o.order_status === "cancelled").length,
         });
 
-        // Sync orders with Shopify in the background
-        if (data.data.orders.length > 0) {
+        // Sync orders with Shopify in the background only if 10 seconds have passed
+        const now = Date.now();
+        if (data.data.orders.length > 0 && (now - lastSyncTime > 10000)) {
+          setLastSyncTime(now);
           syncOrdersInBackground(data.data.orders);
         }
       }

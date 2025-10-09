@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
       .populate('patient_id', 'name mrn phone age gender city')
       .populate('doctor_id', 'name email phone specialty')
       .populate('district_id', 'name code')
-      .sort({ created_at: -1 })
+      .sort({ shopify_order_number: -1 })
       .skip(skip)
       .limit(limit);
 

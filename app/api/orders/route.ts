@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
     const orders = await Order.find(query)
       .populate('prescription_id', 'prescription_text diagnosis priority')
       .populate('doctor_info.district_id', 'name code')
-      .sort({ created_at: -1 })
+      .sort({ shopify_order_number: -1 })
       .skip(skip)
       .limit(limit);
 

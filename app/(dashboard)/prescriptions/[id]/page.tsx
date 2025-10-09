@@ -165,9 +165,6 @@ export default function PrescriptionDetailPage({ params }: { params: { id: strin
           </div>
         </div>
         <div className="flex gap-2">
-          <Badge className={getStatusColor(prescription.priority)}>
-            {prescription.priority}
-          </Badge>
           <Badge className={getStatusColor(prescription.order_status)}>
             {prescription.order_status}
           </Badge>
@@ -283,23 +280,11 @@ export default function PrescriptionDetailPage({ params }: { params: { id: strin
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            <div>
-              <p className="text-sm font-medium text-black">Duration</p>
-              <p className="text-lg font-semibold">{prescription.duration_days} days</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-black">Priority</p>
-              <Badge className={`${getStatusColor(prescription.priority)} text-base px-3 py-1`}>
-                {prescription.priority}
-              </Badge>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-black">Status</p>
-              <Badge className={`${getStatusColor(prescription.order_status)} text-base px-3 py-1`}>
-                {prescription.order_status}
-              </Badge>
-            </div>
+          <div>
+            <p className="text-sm font-medium text-black">Status</p>
+            <Badge className={`${getStatusColor(prescription.order_status)} text-base px-3 py-1`}>
+              {prescription.order_status}
+            </Badge>
           </div>
 
           {prescription.notes && (

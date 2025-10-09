@@ -409,18 +409,6 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                 <p className="whitespace-pre-wrap">{order.prescription_id.prescription_text}</p>
               </div>
             </div>
-            <div>
-                <p className="text-sm font-medium text-black">Priority</p>
-              <Badge className={
-                order.prescription_id.priority === "urgent" 
-                  ? "bg-orange-100 text-orange-800"
-                  : order.prescription_id.priority === "emergency"
-                  ? "bg-red-100 text-red-800"
-                  : "bg-gray-100 text-black"
-              }>
-                {order.prescription_id.priority}
-              </Badge>
-            </div>
             <Button
               variant="outline"
               onClick={() => router.push(`/prescriptions/${order.prescription_id._id}`)}

@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
 
     const patients = await Patient.find(query)
       .populate('created_by', 'name email phone specialty')
-      .sort({ created_at: -1 })
+      .sort({ mrn: -1 })
       .skip(skip)
       .limit(limit);
 

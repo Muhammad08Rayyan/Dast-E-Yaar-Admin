@@ -27,8 +27,9 @@ export async function GET(req: NextRequest) {
     await connectDB();
 
     // Get recent orders - patient_info is embedded, not a reference
+    // Sort by order number descending (highest order number first)
     const recentOrders = await Order.find()
-      .sort({ created_at: -1 })
+      .sort({ shopify_order_number: -1 })
       .limit(10)
       .select('shopify_order_number shopify_order_id order_status total_amount patient_info created_at')
       .lean();

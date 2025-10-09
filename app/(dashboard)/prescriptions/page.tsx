@@ -50,7 +50,6 @@ export default function PrescriptionsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [orderStatus, setOrderStatus] = useState("");
-  const [priority, setPriority] = useState("");
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
@@ -67,7 +66,7 @@ export default function PrescriptionsPage() {
 
   useEffect(() => {
     fetchPrescriptions();
-  }, [pagination.page, orderStatus, priority]);
+  }, [pagination.page, orderStatus]);
 
   const fetchPrescriptions = async () => {
     setLoading(true);
@@ -80,7 +79,6 @@ export default function PrescriptionsPage() {
 
       if (search) params.append("search", search);
       if (orderStatus) params.append("order_status", orderStatus);
-      if (priority) params.append("priority", priority);
 
       const response = await fetch(`/api/prescriptions?${params}`, {
         headers: {
@@ -99,13 +97,8 @@ export default function PrescriptionsPage() {
           total: data.data.pagination.total,
           pending: allPrescriptions.filter((p: Prescription) => p.order_status === "pending").length,
           fulfilled: allPrescriptions.filter((p: Prescription) => p.order_status === "fulfilled").length,
-          urgent: allPrescriptions.filter((p: Prescription) => p.priority === "urgent" || p.priority === "emergency").length,
+          urgent: 0,
         });
-
-        // Auto-sync order status for prescriptions with active orders
-        if (data.data.prescriptions.length > 0) {
-          syncPrescriptionOrders(data.data.prescriptions);
-        }
       }
     } catch (error) {
       console.error("Error fetching prescriptions:", error);
@@ -114,54 +107,6 @@ export default function PrescriptionsPage() {
     }
   };
 
-  const syncPrescriptionOrders = async (prescriptionsToSync: Prescription[]) => {
-    try {
-      const token = localStorage.getItem("token");
-      
-      // Only sync prescriptions with active orders (not fulfilled or cancelled)
-      const activePrescriptions = prescriptionsToSync.filter(
-        (p) => p.order_status !== "fulfilled" && p.order_status !== "cancelled"
-      );
-
-      if (activePrescriptions.length === 0) {
-        return; // No orders to sync
-      }
-
-      // Get order IDs from prescriptions
-      const orderIds: string[] = [];
-      for (const prescription of activePrescriptions) {
-        const orderResponse = await fetch(`/api/orders?prescription_id=${prescription._id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const orderData = await orderResponse.json();
-        if (orderData.success && orderData.data.orders.length > 0) {
-          orderIds.push(orderData.data.orders[0]._id);
-        }
-      }
-
-      if (orderIds.length === 0) return;
-
-      // Sync orders
-      const response = await fetch("/api/orders/bulk-sync", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ order_ids: orderIds }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Refresh prescriptions to show updated order status
-        await fetchPrescriptions();
-      }
-    } catch (error) {
-      console.error("Error syncing prescription orders:", error);
-      // Silently fail
-    }
-  };
 
   const handleSearch = () => {
     setPagination({ ...pagination, page: 1 });
@@ -269,7 +214,7 @@ export default function PrescriptionsPage() {
           <CardTitle className="text-black">Filter Prescriptions</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-3">
             <div className="md:col-span-2">
               <div className="flex gap-2">
                 <Input
@@ -295,17 +240,6 @@ export default function PrescriptionsPage() {
               <option value="processing">Processing</option>
               <option value="fulfilled">Fulfilled</option>
               <option value="cancelled">Cancelled</option>
-            </select>
-
-            <select
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D32F2F]"
-              value={priority}
-              onChange={(e) => setPriority(e.target.value)}
-            >
-              <option value="">All Priority</option>
-              <option value="normal">Normal</option>
-              <option value="urgent">Urgent</option>
-              <option value="emergency">Emergency</option>
             </select>
           </div>
         </CardContent>
@@ -336,7 +270,6 @@ export default function PrescriptionsPage() {
                     <TableHead className="text-black">Patient</TableHead>
                     <TableHead className="text-black">Doctor</TableHead>
                     <TableHead className="text-black">District</TableHead>
-                    <TableHead className="text-black">Priority</TableHead>
                     <TableHead className="text-black">Status</TableHead>
                     <TableHead className="text-black">Date</TableHead>
                     <TableHead className="text-black">Actions</TableHead>
@@ -359,11 +292,6 @@ export default function PrescriptionsPage() {
                           </div>
                         </TableCell>
                         <TableCell>{prescription.district_id.name}</TableCell>
-                        <TableCell>
-                          <Badge className={getStatusColor(prescription.priority)}>
-                            {prescription.priority}
-                          </Badge>
-                        </TableCell>
                         <TableCell>
                           <Badge className={getStatusColor(prescription.order_status)}>
                             {prescription.order_status}

@@ -106,12 +106,22 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState("");
+  const [lastSyncTime, setLastSyncTime] = useState<number>(0);
 
   useEffect(() => {
     const initDashboard = async () => {
       await fetchDashboardData();
-      // Auto-sync orders in the background after initial load
+      // Auto-sync orders in the background after initial load, then every 10 seconds
+      const now = Date.now();
+      setLastSyncTime(now);
       syncActiveOrders();
+
+      // Set up interval for syncing every 10 seconds
+      const syncInterval = setInterval(() => {
+        syncActiveOrders();
+      }, 10000);
+
+      return () => clearInterval(syncInterval);
     };
     initDashboard();
   }, []);
@@ -170,6 +180,9 @@ export default function DashboardPage() {
   };
 
   const syncActiveOrders = async () => {
+    // Skip if already syncing
+    if (syncing) return;
+
     try {
       setSyncing(true);
       const token = localStorage.getItem("token");
@@ -199,7 +212,9 @@ export default function DashboardPage() {
             body: JSON.stringify({ order_ids: orderIds }),
           });
 
-          // Refresh dashboard data to show updated stats
+          // Refresh dashboard data to show updated stats (without triggering another sync)
+          const now = Date.now();
+          setLastSyncTime(now);
           await fetchDashboardData();
         }
       }
@@ -508,7 +523,7 @@ export default function DashboardPage() {
               {activities.length > 5 && (
                 <Button
                   variant="outline"
-                  className="w-full"
+                  className="w-full text-black"
                   onClick={() => router.push("/prescriptions")}
                 >
                   View All Prescriptions
@@ -551,7 +566,7 @@ export default function DashboardPage() {
               {recentOrders.length > 5 && (
                 <Button
                   variant="outline"
-                  className="w-full"
+                  className="w-full text-black"
                   onClick={() => router.push("/orders")}
                 >
                   View All Orders

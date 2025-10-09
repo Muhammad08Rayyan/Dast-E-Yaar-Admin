@@ -26,13 +26,13 @@ export async function GET(req: NextRequest) {
     // Connect to database
     await connectDB();
 
-    // Get recent prescriptions with populated data
+    // Get recent prescriptions with populated data, sorted by order number descending
     const recentPrescriptions = await Prescription.find()
-      .sort({ created_at: -1 })
+      .sort({ shopify_order_number: -1 })
       .limit(10)
       .populate('patient_id', 'name mrn')
       .populate('doctor_id', 'name specialization')
-      .select('mrn order_status created_at prescription_text selected_product patient_id doctor_id')
+      .select('mrn order_status created_at prescription_text selected_product patient_id doctor_id shopify_order_number')
       .lean();
 
     // Format the activities
