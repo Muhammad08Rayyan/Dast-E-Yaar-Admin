@@ -7,7 +7,7 @@ export interface AuthenticatedRequest extends NextRequest {
 
 export function withAuth(
   handler: (req: AuthenticatedRequest) => Promise<NextResponse>,
-  options?: { roles?: Array<'super_admin' | 'kam'> }
+  options?: { roles?: Array<'super_admin' | 'kam' | 'distributor'> }
 ) {
   return async (req: AuthenticatedRequest) => {
     try {
@@ -73,7 +73,7 @@ export function isKAM(user: JWTPayload): boolean {
 // New authMiddleware for direct use in API routes
 export async function authMiddleware(
   req: NextRequest,
-  allowedRoles?: Array<'super_admin' | 'kam'>
+  allowedRoles?: Array<'super_admin' | 'kam' | 'distributor'>
 ): Promise<{ authorized: boolean; message: string; user?: JWTPayload }> {
   try {
     const authHeader = req.headers.get('authorization');
@@ -112,7 +112,7 @@ export async function authMiddleware(
 // Alias for verifyAuth (same as authMiddleware but returns authenticated instead of authorized)
 export async function verifyAuth(
   req: NextRequest,
-  allowedRoles?: Array<'super_admin' | 'kam'>
+  allowedRoles?: Array<'super_admin' | 'kam' | 'distributor'>
 ): Promise<{ authenticated: boolean; message: string; user?: JWTPayload }> {
   try {
     const authHeader = req.headers.get('authorization');

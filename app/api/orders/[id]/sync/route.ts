@@ -6,13 +6,13 @@ import Prescription from '@/lib/models/Prescription';
 import { successResponse, errorResponse } from '@/lib/utils/response';
 import mongoose from 'mongoose';
 
-// POST /api/orders/:id/sync - Sync order status from Shopify (Super Admin only)
+// POST /api/orders/:id/sync - Sync order status from Shopify (Super Admin and Distributors)
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const authResult = await authMiddleware(request, ['super_admin']);
+    const authResult = await authMiddleware(request, ['super_admin', 'distributor']);
     if (!authResult.authorized) {
       return errorResponse(authResult.message, 401);
     }
@@ -29,6 +29,27 @@ export async function POST(
 
     if (!order) {
       return errorResponse('Order not found', 404);
+    }
+
+    // Check if this is a non-Shopify order (LOCAL orders)
+    if (order.shopify_order_id?.startsWith('LOCAL-')) {
+      // Non-Shopify orders don't need syncing, return current data
+      const currentOrder = await Order.findById(id)
+        .populate({
+          path: 'prescription_id',
+          populate: [
+            { path: 'patient_id', select: 'name mrn phone age gender city address' },
+            { path: 'doctor_id', select: 'name email phone pmdc_number specialty' },
+            { path: 'district_id', select: 'name code' },
+          ],
+        })
+        .populate('doctor_info.doctor_id', 'name email phone pmdc_number specialty')
+        .populate('doctor_info.district_id', 'name code');
+
+      return successResponse({
+        order: currentOrder,
+        message: 'Non-Shopify order - no sync needed',
+      });
     }
 
     // Fetch latest status from Shopify

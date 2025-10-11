@@ -5,7 +5,17 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Package, User, MapPin, Phone, DollarSign, FileText } from "lucide-react";
+import { ArrowLeft, Package, User, MapPin, Phone, DollarSign, FileText, Edit } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 
 interface Order {
   _id: string;
@@ -68,15 +78,34 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [isDistributor, setIsDistributor] = useState(false);
+  
+  // Edit status modal states
+  const [isEditStatusOpen, setIsEditStatusOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    order_status: '',
+    financial_status: '',
+    fulfillment_status: '',
+  });
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
+    // Check if user is distributor
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      setIsDistributor(user.role === "distributor");
+    }
+
     const initializeOrder = async () => {
       await fetchOrder();
-      // Sync with Shopify in the background after initial load
-      syncOrderStatus();
+      // Sync with Shopify in the background after initial load (only for super admin)
+      if (!isDistributor) {
+        syncOrderStatus();
+      }
     };
     initializeOrder();
-  }, [params.id]);
+  }, [params.id, isDistributor]);
 
   const fetchOrder = async () => {
     setLoading(true);
@@ -150,6 +179,49 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
     return 'N/A';
   };
 
+  const handleEditStatus = () => {
+    if (order) {
+      setEditFormData({
+        order_status: order.order_status,
+        financial_status: order.financial_status,
+        fulfillment_status: order.fulfillment_status,
+      });
+      setIsEditStatusOpen(true);
+    }
+  };
+
+  const handleUpdateStatus = async () => {
+    try {
+      setUpdating(true);
+      const token = localStorage.getItem("token");
+      
+      const response = await fetch(`/api/orders/${params.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(editFormData),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setOrder(data.data.order);
+        setIsEditStatusOpen(false);
+        // Show success message or toast
+        alert('Order status updated successfully');
+      } else {
+        alert(data.message || 'Failed to update order status');
+      }
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      alert('Failed to update order status');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -194,15 +266,26 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
           </div>
         </div>
         <div className="flex gap-2 items-center">
-          <Button 
-            variant="outline" 
-            onClick={syncOrderStatus}
-            disabled={syncing}
-            className="gap-2"
-          >
-            <Package className="h-4 w-4" />
-            {syncing ? 'Syncing...' : 'Sync with Shopify'}
-          </Button>
+          {isDistributor ? (
+            <Button 
+              variant="outline" 
+              onClick={handleEditStatus}
+              className="gap-2"
+            >
+              <Edit className="h-4 w-4" />
+              Edit Status
+            </Button>
+          ) : (
+            <Button 
+              variant="outline" 
+              onClick={syncOrderStatus}
+              disabled={syncing}
+              className="gap-2"
+            >
+              <Package className="h-4 w-4" />
+              {syncing ? 'Syncing...' : 'Sync with Shopify'}
+            </Button>
+          )}
           <Badge className={getStatusColor(order.order_status)}>
             {order.order_status}
           </Badge>
@@ -418,6 +501,77 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
           </CardContent>
         </Card>
       )}
+
+      {/* Edit Status Modal */}
+      <Dialog open={isEditStatusOpen} onOpenChange={setIsEditStatusOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Order Status</DialogTitle>
+            <DialogDescription>
+              Update the order status, financial status, and fulfillment status for this order.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="order_status">Order Status</Label>
+              <Select
+                id="order_status"
+                value={editFormData.order_status}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, order_status: e.target.value }))}
+              >
+                <option value="pending">Pending</option>
+                <option value="processing">Processing</option>
+                <option value="fulfilled">Fulfilled</option>
+                <option value="cancelled">Cancelled</option>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="financial_status">Financial Status</Label>
+              <Select
+                id="financial_status"
+                value={editFormData.financial_status}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, financial_status: e.target.value }))}
+              >
+                <option value="pending">Pending</option>
+                <option value="paid">Paid</option>
+                <option value="refunded">Refunded</option>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="fulfillment_status">Fulfillment Status</Label>
+              <Select
+                id="fulfillment_status"
+                value={editFormData.fulfillment_status}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, fulfillment_status: e.target.value }))}
+              >
+                <option value="unfulfilled">Unfulfilled</option>
+                <option value="fulfilled">Fulfilled</option>
+                <option value="partial">Partial</option>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditStatusOpen(false)}
+              disabled={updating}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateStatus}
+              disabled={updating}
+              className="bg-[#D32F2F] hover:bg-[#B71C1C]"
+            >
+              {updating ? 'Updating...' : 'Update Status'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );

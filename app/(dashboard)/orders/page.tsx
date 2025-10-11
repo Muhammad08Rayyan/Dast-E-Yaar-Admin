@@ -51,6 +51,7 @@ export default function OrdersPage() {
   const [financialStatus, setFinancialStatus] = useState("");
   const [fulfillmentStatus, setFulfillmentStatus] = useState("");
   const [lastSyncTime, setLastSyncTime] = useState<number>(0);
+  const [isDistributor, setIsDistributor] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
@@ -65,6 +66,21 @@ export default function OrdersPage() {
     fulfilled: 0,
     cancelled: 0,
   });
+
+  useEffect(() => {
+    // Check if user is distributor
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      setIsDistributor(user.role === "distributor");
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    router.push("/login");
+  };
 
   useEffect(() => {
     fetchOrders();
@@ -209,11 +225,18 @@ export default function OrdersPage() {
   return (
     <div className="space-y-6 text-black">
       {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-black">Orders</h1>
-        <p className="text-black mt-1">
-          Manage and track all orders. Click on any order to view details and sync with Shopify.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-black">Orders</h1>
+          <p className="text-black mt-1">
+            Manage and track all orders. Click on any order to view details and sync with Shopify.
+          </p>
+        </div>
+        {isDistributor && (
+          <Button onClick={handleLogout} variant="outline" className="text-black border-black hover:bg-black hover:text-white">
+            Logout
+          </Button>
+        )}
       </div>
 
       {/* Stats Cards */}

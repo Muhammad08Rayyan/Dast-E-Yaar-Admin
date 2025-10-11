@@ -10,6 +10,8 @@ export interface IOrder extends Document {
     name: string;
     phone: string;
     address?: string;
+    city_id?: mongoose.Types.ObjectId;
+    city_name?: string;
   };
   doctor_info: {
     doctor_id: mongoose.Types.ObjectId;
@@ -49,6 +51,11 @@ const OrderSchema = new Schema<IOrder>(
       name: String,
       phone: String,
       address: String,
+      city_id: {
+        type: Schema.Types.ObjectId,
+        ref: 'City',
+      },
+      city_name: String,
     },
     doctor_info: {
       doctor_id: {

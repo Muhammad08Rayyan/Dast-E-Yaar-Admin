@@ -16,6 +16,7 @@ import {
   BarChart3,
   Settings,
   LogOut,
+  Building2,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -28,6 +29,7 @@ export function Sidebar({ userRole }: SidebarProps) {
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["super_admin"] },
     { name: "Districts", href: "/districts", icon: MapPin, roles: ["super_admin"] },
+    { name: "Cities", href: "/cities", icon: Building2, roles: ["super_admin"] },
     { name: "Teams", href: "/teams", icon: UsersRound, roles: ["super_admin"] },
     { name: "KAMs", href: "/users", icon: Users, roles: ["super_admin"] },
     { name: "Doctors", href: "/doctors", icon: UserCog, roles: ["super_admin", "kam"] },

@@ -39,6 +39,8 @@ export default function LoginPage() {
       // Redirect based on user role
       if (data.data.user.role === "kam") {
         router.push("/doctors");
+      } else if (data.data.user.role === "distributor") {
+        router.push("/orders");
       } else {
         router.push("/dashboard");
       }

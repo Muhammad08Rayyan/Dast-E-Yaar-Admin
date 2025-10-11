@@ -5,10 +5,10 @@ import Order from '@/lib/models/Order';
 import Prescription from '@/lib/models/Prescription';
 import { successResponse, errorResponse } from '@/lib/utils/response';
 
-// POST /api/orders/bulk-sync - Sync multiple orders from Shopify (Super Admin only)
+// POST /api/orders/bulk-sync - Sync multiple orders from Shopify (Super Admin and Distributors)
 export async function POST(request: NextRequest) {
   try {
-    const authResult = await authMiddleware(request, ['super_admin']);
+    const authResult = await authMiddleware(request, ['super_admin', 'distributor']);
     if (!authResult.authorized) {
       return errorResponse(authResult.message, 401);
     }

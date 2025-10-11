@@ -9,9 +9,10 @@ if (!JWT_SECRET) {
 export interface JWTPayload {
   userId: string;
   email: string;
-  role: 'super_admin' | 'kam';
+  role: 'super_admin' | 'kam' | 'distributor';
   team_id?: string | null;
   district_id?: string | null;
+  city_id?: string | null;
 }
 
 export function signToken(payload: JWTPayload): string {

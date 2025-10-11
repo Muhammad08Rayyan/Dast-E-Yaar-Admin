@@ -23,10 +23,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     try {
       const userData = JSON.parse(userStr);
       setUser(userData);
-      
+
       // Redirect KAM users away from dashboard to doctors page
       if (userData.role === "kam" && window.location.pathname === "/dashboard") {
         router.push("/doctors");
+        return;
+      }
+
+      // Redirect distributors away from dashboard to orders page
+      if (userData.role === "distributor" && window.location.pathname === "/dashboard") {
+        router.push("/orders");
         return;
       }
     } catch {
@@ -52,6 +58,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return null;
   }
 
+  // Distributor layout - no sidebar, just orders
+  if (user.role === "distributor") {
+    return (
+      <div className="flex h-screen overflow-hidden bg-gray-50">
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        </div>
+      </div>
+    );
+  }
+
+  // Regular admin/KAM layout with sidebar
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
       {/* Sidebar */}
