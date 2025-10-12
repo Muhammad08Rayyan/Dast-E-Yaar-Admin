@@ -107,7 +107,7 @@ export default function DashboardPage() {
   const [error, setError] = useState("");
   const [, setLastSyncTime] = useState<number>(0);
 
-  const fetchDashboardData = useCallback(async () => {
+  const fetchDashboardData = useCallback(async (shouldSync: boolean = false) => {
     try {
       setLoading(true);
       setError("");
@@ -116,6 +116,11 @@ export default function DashboardPage() {
       if (!token) {
         router.push("/login");
         return;
+      }
+
+      // If shouldSync is true, sync active orders first
+      if (shouldSync && !syncing) {
+        await syncActiveOrdersInternal(token);
       }
 
       // Fetch all dashboard data in parallel
@@ -158,15 +163,14 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, [router, syncing]);
 
-  const syncActiveOrders = useCallback(async () => {
-    // Skip if already syncing
-    if (syncing) return;
-
+  // Internal sync function that doesn't trigger re-fetch
+  const syncActiveOrdersInternal = async (token: string) => {
     try {
       setSyncing(true);
-      const token = localStorage.getItem("token");
+      const now = Date.now();
+      setLastSyncTime(now);
 
       // Get all active (non-fulfilled/non-cancelled) orders to sync
       const ordersResponse = await fetch("/api/orders?limit=100", {
@@ -192,11 +196,6 @@ export default function DashboardPage() {
             },
             body: JSON.stringify({ order_ids: orderIds }),
           });
-
-          // Refresh dashboard data to show updated stats (without triggering another sync)
-          const now = Date.now();
-          setLastSyncTime(now);
-          await fetchDashboardData();
         }
       }
     } catch (error) {
@@ -205,11 +204,10 @@ export default function DashboardPage() {
     } finally {
       setSyncing(false);
     }
-  }, [syncing, fetchDashboardData]);
+  };
 
   const handleRefresh = async () => {
-    await fetchDashboardData();
-    await syncActiveOrders();
+    await fetchDashboardData(true);
   };
 
 
@@ -235,22 +233,10 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    const initDashboard = async () => {
-      await fetchDashboardData();
-      // Auto-sync orders in the background after initial load, then every 10 seconds
-      const now = Date.now();
-      setLastSyncTime(now);
-      syncActiveOrders();
-
-      // Set up interval for syncing every 10 seconds
-      const syncInterval = setInterval(() => {
-        syncActiveOrders();
-      }, 10000);
-
-      return () => clearInterval(syncInterval);
-    };
-    initDashboard();
-  }, [fetchDashboardData, syncActiveOrders]);
+    // Load dashboard data with sync on initial mount
+    fetchDashboardData(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array - only run once on mount
 
   const mainStatCards = [
     {
