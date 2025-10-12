@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, Edit, Trash2, Users, TrendingUp } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Users, TrendingUp, Package } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,6 +36,15 @@ interface District {
   code: string;
 }
 
+interface Product {
+  _id: string;
+  name: string;
+  sku: string;
+  price: number;
+  description?: string;
+  isAssigned: boolean;
+}
+
 export default function TeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
@@ -43,13 +52,21 @@ export default function TeamsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [districtFilter, setDistrictFilter] = useState('');
-  
+
   // Dialog states
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
-  
+
+  // Product management states
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [productSearch, setProductSearch] = useState('');
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
+  const [savingProducts, setSavingProducts] = useState(false);
+
   // Form states
   const [formData, setFormData] = useState({
     name: '',
@@ -112,6 +129,28 @@ export default function TeamsPage() {
       }
     } catch (error) {
       console.error('Error fetching districts:', error);
+    }
+  }, []);
+
+  const fetchTeamProducts = useCallback(async (teamId: string) => {
+    setLoadingProducts(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/teams/${teamId}/products`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      if (data.success) {
+        setProducts(data.data.products || []);
+        const assigned = data.data.products
+          .filter((p: Product) => p.isAssigned)
+          .map((p: Product) => p._id);
+        setSelectedProductIds(assigned);
+      }
+    } catch (error) {
+      console.error('Error fetching team products:', error);
+    } finally {
+      setLoadingProducts(false);
     }
   }, []);
 
@@ -239,6 +278,67 @@ export default function TeamsPage() {
     }
   };
 
+  const handleSaveProducts = async () => {
+    if (!selectedTeam) return;
+
+    setSavingProducts(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/teams/${selectedTeam._id}/products`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ productIds: selectedProductIds }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        alert('Products assigned successfully!');
+        setIsProductsOpen(false);
+        setProductSearch('');
+      } else {
+        alert(data.error?.message || 'Failed to assign products');
+      }
+    } catch (error) {
+      console.error('Error assigning products:', error);
+      alert('An error occurred while assigning products');
+    } finally {
+      setSavingProducts(false);
+    }
+  };
+
+  const toggleProductSelection = (productId: string) => {
+    setSelectedProductIds((prev) =>
+      prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId]
+    );
+  };
+
+  const toggleAllProducts = () => {
+    const filteredProducts = products.filter((p) =>
+      p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+      p.sku.toLowerCase().includes(productSearch.toLowerCase())
+    );
+
+    const allSelected = filteredProducts.every((p) =>
+      selectedProductIds.includes(p._id)
+    );
+
+    if (allSelected) {
+      // Deselect all filtered products
+      setSelectedProductIds((prev) =>
+        prev.filter((id) => !filteredProducts.find((p) => p._id === id))
+      );
+    } else {
+      // Select all filtered products
+      const newIds = filteredProducts.map((p) => p._id);
+      setSelectedProductIds((prev) => [...new Set([...prev, ...newIds])]);
+    }
+  };
+
   const openEditDialog = (team: Team) => {
     setSelectedTeam(team);
     setFormData({
@@ -248,6 +348,13 @@ export default function TeamsPage() {
     });
     setFormErrors({});
     setIsEditOpen(true);
+  };
+
+  const openProductsDialog = (team: Team) => {
+    setSelectedTeam(team);
+    setProductSearch('');
+    fetchTeamProducts(team._id);
+    setIsProductsOpen(true);
   };
 
   const handleDelete = async (team: Team) => {
@@ -283,6 +390,11 @@ export default function TeamsPage() {
     setIsCreateOpen(true);
   };
 
+  const filteredProducts = products.filter((p) =>
+    p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+    p.sku.toLowerCase().includes(productSearch.toLowerCase())
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -301,7 +413,7 @@ export default function TeamsPage() {
         <div>
           <h1 className="text-3xl font-bold text-black">Team Management</h1>
           <p className="text-black mt-1">
-            Manage teams and assign Account Key Managers
+            Manage teams and assign products to teams
           </p>
         </div>
         {currentUser?.role === 'super_admin' && (
@@ -362,6 +474,7 @@ export default function TeamsPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => openEditDialog(team)}
+                      title="Edit team"
                     >
                       <Edit className="h-3 w-3 text-black" />
                     </Button>
@@ -370,6 +483,7 @@ export default function TeamsPage() {
                       size="sm"
                       onClick={() => handleDelete(team)}
                       className="text-red-600 hover:text-red-700"
+                      title="Delete team"
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
@@ -414,7 +528,7 @@ export default function TeamsPage() {
                 </div>
               </div>
 
-              <div className="mt-4 pt-4 border-t">
+              <div className="mt-4 pt-4 border-t flex justify-between items-center">
                 <span
                   className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     team.status === 'active'
@@ -424,6 +538,17 @@ export default function TeamsPage() {
                 >
                   {team.status.charAt(0).toUpperCase() + team.status.slice(1)}
                 </span>
+                {currentUser?.role === 'super_admin' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openProductsDialog(team)}
+                    className="text-[#D32F2F] hover:bg-[#D32F2F] hover:text-white"
+                  >
+                    <Package className="h-3 w-3 mr-1" />
+                    Manage Products
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -605,7 +730,109 @@ export default function TeamsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Manage Products Dialog */}
+      <Dialog open={isProductsOpen} onOpenChange={setIsProductsOpen}>
+        <DialogContent onClose={() => setIsProductsOpen(false)} className="max-w-3xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="text-black">Manage Team Products</DialogTitle>
+            <DialogDescription>
+              Assign products to <span className="font-semibold text-black">{selectedTeam?.name}</span>. Doctors in this team will only see selected products.
+            </DialogDescription>
+          </DialogHeader>
+
+          {loadingProducts ? (
+            <div className="p-12 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D32F2F] mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading products...</p>
+            </div>
+          ) : (
+            <div className="space-y-4 p-6">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black" />
+                <Input
+                  placeholder="Search products by name or SKU..."
+                  value={productSearch}
+                  onChange={(e) => setProductSearch(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              {/* Select All */}
+              <div className="flex items-center justify-between py-2 border-b">
+                <Label className="text-sm font-medium text-black">
+                  {selectedProductIds.length} of {products.length} products selected
+                </Label>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={toggleAllProducts}
+                  className="text-black"
+                >
+                  {filteredProducts.every((p) => selectedProductIds.includes(p._id))
+                    ? 'Deselect All'
+                    : 'Select All'}
+                </Button>
+              </div>
+
+              {/* Products List */}
+              <div className="max-h-[400px] overflow-y-auto space-y-2">
+                {filteredProducts.map((product) => (
+                  <div
+                    key={product._id}
+                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                      selectedProductIds.includes(product._id)
+                        ? 'bg-blue-50 border-blue-300'
+                        : 'bg-white border-gray-200 hover:bg-gray-50'
+                    }`}
+                    onClick={() => toggleProductSelection(product._id)}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedProductIds.includes(product._id)}
+                      onChange={() => toggleProductSelection(product._id)}
+                      className="h-4 w-4 rounded border-gray-300 text-[#D32F2F] focus:ring-[#D32F2F]"
+                    />
+                    <div className="flex-1">
+                      <p className="font-medium text-black">{product.name}</p>
+                      <div className="flex gap-3 text-xs text-gray-500 mt-1">
+                        <span>SKU: {product.sku}</span>
+                        <span>Rs. {product.price.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {filteredProducts.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  No products found
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsProductsOpen(false)}
+              disabled={savingProducts}
+              className="text-black"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveProducts}
+              disabled={savingProducts || loadingProducts}
+              className="bg-[#D32F2F] hover:bg-[#B71C1C] text-white"
+            >
+              {savingProducts ? 'Saving...' : 'Save Products'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
-
