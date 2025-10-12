@@ -17,6 +17,7 @@ import {
   Settings,
   LogOut,
   Building2,
+  Image as ImageIcon,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -37,6 +38,7 @@ export function Sidebar({ userRole }: SidebarProps) {
     { name: "Prescriptions", href: "/prescriptions", icon: FileText, roles: ["super_admin"] },
     { name: "Orders", href: "/orders", icon: ShoppingCart, roles: ["super_admin"] },
     { name: "Products", href: "/products", icon: Package, roles: ["super_admin"] },
+    { name: "Banners", href: "/banners", icon: ImageIcon, roles: ["super_admin"] },
     { name: "Reports", href: "/reports", icon: BarChart3, roles: ["super_admin", "kam"] },
   ];
 

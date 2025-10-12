@@ -9,6 +9,7 @@ import DistrictProduct from './DistrictProduct';
 import Order from './Order';
 import Patient from './Patient';
 import Prescription from './Prescription';
+import Banner from './Banner';
 
 // Export all models
 export {
@@ -21,6 +22,7 @@ export {
   Order,
   Patient,
   Prescription,
+  Banner,
 };
 
 // Helper to ensure all models are loaded
@@ -35,6 +37,7 @@ export function ensureModelsLoaded() {
     Order: Order.modelName,
     Patient: Patient.modelName,
     Prescription: Prescription.modelName,
+    Banner: Banner.modelName,
   };
 }
 
