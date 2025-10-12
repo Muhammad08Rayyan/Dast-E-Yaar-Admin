@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { Search, Image as ImageIcon, Plus, Edit, Trash2, Eye, ArrowUp, ArrowDown } from "lucide-react";
+import { Search, Image as ImageIcon, Plus, Edit, Trash2 } from "lucide-react";
 import Image from "next/image";
 
 interface Banner {
@@ -127,8 +127,11 @@ export default function BannersPage() {
       reader.readAsDataURL(file);
 
       // Clear image error
-      const { image, ...rest } = formErrors;
-      setFormErrors(rest);
+      setFormErrors(prev => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { image, ...rest } = prev;
+        return rest;
+      });
     }
   };
 

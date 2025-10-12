@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -287,7 +287,7 @@ export default function DistributorsPage() {
       </Card>
 
       {/* Create/Edit Dialog */}
-      <Dialog open={isCreateOpen || isEditOpen} onOpenChange={(open) => {
+      <Dialog open={isCreateOpen || isEditOpen} onOpenChange={() => {
         setIsCreateOpen(false);
         setIsEditOpen(false);
       }}>

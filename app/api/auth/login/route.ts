@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import bcrypt from 'bcryptjs';
-import mongoose from 'mongoose';
+// import mongoose from 'mongoose';
 import connectDB from '@/lib/mongodb';
 import User from '@/lib/models/User';
 import Distributor from '@/lib/models/Distributor';
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     }
 
     // First, try to find user in User collection
-    let user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
 
     if (user) {
       // Check if user is active

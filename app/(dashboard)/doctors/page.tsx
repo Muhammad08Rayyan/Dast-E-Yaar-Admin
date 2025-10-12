@@ -40,11 +40,11 @@ interface Doctor {
   created_at: string;
 }
 
-interface District {
-  _id: string;
-  name: string;
-  code: string;
-}
+// interface District {
+//   _id: string;
+//   name: string;
+//   code: string;
+// }
 
 interface Team {
   _id: string;

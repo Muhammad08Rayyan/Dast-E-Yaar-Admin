@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,7 +8,6 @@ import {
   UserCog,
   FileText,
   ShoppingCart,
-  TrendingUp,
   MapPin,
   Package,
   Activity,
@@ -106,27 +105,9 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState("");
-  const [lastSyncTime, setLastSyncTime] = useState<number>(0);
+  const [, setLastSyncTime] = useState<number>(0);
 
-  useEffect(() => {
-    const initDashboard = async () => {
-      await fetchDashboardData();
-      // Auto-sync orders in the background after initial load, then every 10 seconds
-      const now = Date.now();
-      setLastSyncTime(now);
-      syncActiveOrders();
-
-      // Set up interval for syncing every 10 seconds
-      const syncInterval = setInterval(() => {
-        syncActiveOrders();
-      }, 10000);
-
-      return () => clearInterval(syncInterval);
-    };
-    initDashboard();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
@@ -177,9 +158,9 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
 
-  const syncActiveOrders = async () => {
+  const syncActiveOrders = useCallback(async () => {
     // Skip if already syncing
     if (syncing) return;
 
@@ -224,27 +205,13 @@ export default function DashboardPage() {
     } finally {
       setSyncing(false);
     }
-  };
+  }, [syncing, fetchDashboardData]);
 
   const handleRefresh = async () => {
     await fetchDashboardData();
     await syncActiveOrders();
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? "s" : ""} ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
-    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
-    return date.toLocaleDateString();
-  };
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { color: string; icon: any }> = {
@@ -266,6 +233,24 @@ export default function DashboardPage() {
       </span>
     );
   };
+
+  useEffect(() => {
+    const initDashboard = async () => {
+      await fetchDashboardData();
+      // Auto-sync orders in the background after initial load, then every 10 seconds
+      const now = Date.now();
+      setLastSyncTime(now);
+      syncActiveOrders();
+
+      // Set up interval for syncing every 10 seconds
+      const syncInterval = setInterval(() => {
+        syncActiveOrders();
+      }, 10000);
+
+      return () => clearInterval(syncInterval);
+    };
+    initDashboard();
+  }, [fetchDashboardData, syncActiveOrders]);
 
   const mainStatCards = [
     {

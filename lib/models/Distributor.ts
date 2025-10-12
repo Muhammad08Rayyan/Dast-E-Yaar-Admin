@@ -59,7 +59,6 @@ const DistributorSchema = new Schema<IDistributor>(
 );
 
 // Indexes
-DistributorSchema.index({ email: 1 });
 DistributorSchema.index({ city_id: 1 });
 DistributorSchema.index({ status: 1 });
 

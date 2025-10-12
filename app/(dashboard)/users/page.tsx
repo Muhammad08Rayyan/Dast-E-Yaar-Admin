@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
+// import { Badge } from '@/components/ui/badge';
 import {
   Table,
   TableHeader,
@@ -243,27 +243,27 @@ export default function KAMsPage() {
     }
   };
 
-  const toggleStatus = async (user: User) => {
-    const newStatus = user.status === 'active' ? 'inactive' : 'active';
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/users/${user._id}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
+  // const toggleStatus = async (user: User) => {
+  //   const newStatus = user.status === 'active' ? 'inactive' : 'active';
+  //   try {
+  //     const token = localStorage.getItem('token');
+  //     const response = await fetch(`/api/users/${user._id}/status`, {
+  //       method: 'PATCH',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //       body: JSON.stringify({ status: newStatus }),
+  //     });
 
-      const data = await response.json();
-      if (data.success) {
-        fetchUsers();
-      }
-    } catch (error) {
-      console.error('Error toggling status:', error);
-    }
-  };
+  //     const data = await response.json();
+  //     if (data.success) {
+  //       fetchUsers();
+  //     }
+  //   } catch (error) {
+  //     console.error('Error toggling status:', error);
+  //   }
+  // };
 
   return (
     <div className="space-y-6">

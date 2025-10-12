@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import mongoose from 'mongoose';
+// import mongoose from 'mongoose';
 import { authMiddleware } from '@/lib/auth/middleware';
 import { connectDB } from '@/lib/db/connection';
 import Order from '@/lib/models/Order';

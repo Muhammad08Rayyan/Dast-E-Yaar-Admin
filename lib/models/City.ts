@@ -38,7 +38,6 @@ const CitySchema = new Schema<ICity>(
 );
 
 // Index for faster queries
-CitySchema.index({ name: 1 });
 CitySchema.index({ status: 1 });
 CitySchema.index({ distributor_channel: 1 });
 

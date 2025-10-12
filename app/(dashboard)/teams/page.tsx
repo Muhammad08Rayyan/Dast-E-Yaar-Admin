@@ -379,10 +379,10 @@ export default function TeamsPage() {
     }
   };
 
-  const openDeleteDialog = (team: Team) => {
-    setSelectedTeam(team);
-    setIsDeleteOpen(true);
-  };
+  // const openDeleteDialog = (team: Team) => {
+  //   setSelectedTeam(team);
+  //   setIsDeleteOpen(true);
+  // };
 
   const openCreateDialog = () => {
     setFormData({ name: '', description: '', district_id: '' });

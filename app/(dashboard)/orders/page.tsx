@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -48,7 +48,7 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [orderStatus, setOrderStatus] = useState("");
-  const [financialStatus, setFinancialStatus] = useState("");
+  const [financialStatus] = useState("");
   const [fulfillmentStatus, setFulfillmentStatus] = useState("");
   const [lastSyncTime, setLastSyncTime] = useState<number>(0);
   const [isDistributor, setIsDistributor] = useState(false);
@@ -82,11 +82,7 @@ export default function OrdersPage() {
     router.push("/login");
   };
 
-  useEffect(() => {
-    fetchOrders();
-  }, [pagination.page, orderStatus, financialStatus, fulfillmentStatus]);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
@@ -134,7 +130,7 @@ export default function OrdersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.page, pagination.limit, orderStatus, financialStatus, fulfillmentStatus, lastSyncTime, search]);
 
   const syncOrdersInBackground = async (ordersToSync: Order[]) => {
     try {
@@ -183,6 +179,10 @@ export default function OrdersPage() {
       // Silently fail - user still sees cached data
     }
   };
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
   const handleSearch = () => {
     setPagination({ ...pagination, page: 1 });

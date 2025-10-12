@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select } from '@/components/ui/select';
+// import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import {
   Table,
@@ -320,7 +320,7 @@ export default function DistrictCitiesPage({ params }: { params: { id: string } 
       {/* Add/Edit City Dialog */}
       <Dialog
         open={isAddCityOpen || isEditCityOpen}
-        onOpenChange={(open) => {
+        onOpenChange={() => {
           setIsAddCityOpen(false);
           setIsEditCityOpen(false);
         }}

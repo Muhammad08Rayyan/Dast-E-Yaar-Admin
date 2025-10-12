@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -97,11 +97,7 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
   const [data, setData] = useState<PatientData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchPatient();
-  }, [params.id]);
-
-  const fetchPatient = async () => {
+  const fetchPatient = useCallback(async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
@@ -121,7 +117,11 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
     } finally {
       setLoading(false);
     }
-  };
+  }, [params.id]);
+
+  useEffect(() => {
+    fetchPatient();
+  }, [fetchPatient]);
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {

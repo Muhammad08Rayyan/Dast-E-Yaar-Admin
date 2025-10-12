@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -64,11 +64,7 @@ export default function PrescriptionsPage() {
     urgent: 0,
   });
 
-  useEffect(() => {
-    fetchPrescriptions();
-  }, [pagination.page, orderStatus]);
-
-  const fetchPrescriptions = async () => {
+  const fetchPrescriptions = useCallback(async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
@@ -105,8 +101,11 @@ export default function PrescriptionsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.page, pagination.limit, orderStatus, search]);
 
+  useEffect(() => {
+    fetchPrescriptions();
+  }, [fetchPrescriptions]);
 
   const handleSearch = () => {
     setPagination({ ...pagination, page: 1 });

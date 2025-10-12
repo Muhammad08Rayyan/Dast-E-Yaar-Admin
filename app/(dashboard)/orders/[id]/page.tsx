@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -89,25 +89,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
   });
   const [updating, setUpdating] = useState(false);
 
-  useEffect(() => {
-    // Check if user is distributor
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      const user = JSON.parse(userStr);
-      setIsDistributor(user.role === "distributor");
-    }
-
-    const initializeOrder = async () => {
-      await fetchOrder();
-      // Sync with Shopify in the background after initial load (only for super admin)
-      if (!isDistributor) {
-        syncOrderStatus();
-      }
-    };
-    initializeOrder();
-  }, [params.id, isDistributor]);
-
-  const fetchOrder = async () => {
+  const fetchOrder = useCallback(async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
@@ -127,9 +109,9 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
     } finally {
       setLoading(false);
     }
-  };
+  }, [params.id]);
 
-  const syncOrderStatus = async () => {
+  const syncOrderStatus = useCallback(async () => {
     try {
       setSyncing(true);
       const token = localStorage.getItem("token");
@@ -151,7 +133,25 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
     } finally {
       setSyncing(false);
     }
-  };
+  }, [params.id]);
+
+  useEffect(() => {
+    // Check if user is distributor
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      setIsDistributor(user.role === "distributor");
+    }
+
+    const initializeOrder = async () => {
+      await fetchOrder();
+      // Sync with Shopify in the background after initial load (only for super admin)
+      if (!isDistributor) {
+        syncOrderStatus();
+      }
+    };
+    initializeOrder();
+  }, [params.id, isDistributor, fetchOrder, syncOrderStatus]);
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {

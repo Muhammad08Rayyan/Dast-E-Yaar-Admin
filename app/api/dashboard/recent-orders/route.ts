@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/connection';
-import { Order, Patient } from '@/lib/models';
+import { Order } from '@/lib/models';
 import { apiResponse } from '@/lib/utils/response';
 import { verifyAuth } from '@/lib/auth/middleware';
 

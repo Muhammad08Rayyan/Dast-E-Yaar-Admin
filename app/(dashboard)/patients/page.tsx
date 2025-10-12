@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search, Eye, Users, UserPlus } from "lucide-react";
+import { Search, Eye, Users } from "lucide-react";
 
 interface Patient {
   _id: string;
@@ -54,11 +54,7 @@ export default function PatientsPage() {
     female: 0,
   });
 
-  useEffect(() => {
-    fetchPatients();
-  }, [pagination.page, gender, city]);
-
-  const fetchPatients = async () => {
+  const fetchPatients = useCallback(async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
@@ -96,7 +92,11 @@ export default function PatientsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.page, pagination.limit, gender, city, search]);
+
+  useEffect(() => {
+    fetchPatients();
+  }, [fetchPatients]);
 
   const handleSearch = () => {
     setPagination({ ...pagination, page: 1 });

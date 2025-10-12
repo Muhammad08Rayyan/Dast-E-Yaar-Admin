@@ -214,7 +214,7 @@ export default function CitiesPage() {
       } else {
         setFormErrors({ submit: data.error?.message || 'Failed to update city' });
       }
-    } catch (error) {
+    } catch {
       setFormErrors({ submit: 'Failed to update city' });
     } finally {
       setSubmitting(false);
@@ -239,7 +239,7 @@ export default function CitiesPage() {
       } else {
         alert(data.error?.message || 'Failed to delete city');
       }
-    } catch (error) {
+    } catch {
       alert('Failed to delete city');
     } finally {
       setSubmitting(false);

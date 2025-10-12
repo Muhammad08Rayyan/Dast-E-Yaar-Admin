@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -73,11 +73,7 @@ export default function PrescriptionDetailPage({ params }: { params: { id: strin
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchPrescription();
-  }, [params.id]);
-
-  const fetchPrescription = async () => {
+  const fetchPrescription = useCallback(async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
@@ -98,7 +94,11 @@ export default function PrescriptionDetailPage({ params }: { params: { id: strin
     } finally {
       setLoading(false);
     }
-  };
+  }, [params.id]);
+
+  useEffect(() => {
+    fetchPrescription();
+  }, [fetchPrescription]);
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -115,17 +115,6 @@ export default function PrescriptionDetailPage({ params }: { params: { id: strin
     return colors[status] || "bg-gray-100 text-black";
   };
 
-  const formatDate = (obj: any, keys: string[]) => {
-    for (const key of keys) {
-      const value = obj?.[key];
-      if (!value) continue;
-      const dt = new Date(value);
-      if (!isNaN(dt.getTime())) {
-        return dt.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-      }
-    }
-    return 'N/A';
-  };
 
   if (loading) {
     return (

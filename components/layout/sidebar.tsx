@@ -14,7 +14,7 @@ import {
   ShoppingCart,
   UsersRound,
   BarChart3,
-  Settings,
+  // Settings,
   LogOut,
   Building2,
   Image as ImageIcon,
