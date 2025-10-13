@@ -39,11 +39,13 @@ export async function PATCH(
 
     // KAM scoping: Check if KAM can access this doctor
     if (authResult.user?.role === 'kam') {
-      // Get KAM's team
+      // Get KAM's district and team
       const kamUser = await User.findById(authResult.user.userId);
-      if (kamUser && kamUser.team_id) {
-        // Check if doctor belongs to KAM's team
-        if (!doctor.team_id || doctor.team_id.toString() !== kamUser.team_id.toString()) {
+      if (kamUser && kamUser.district_id && kamUser.team_id) {
+        // Check if doctor belongs to KAM's district+team combination
+        if (!doctor.district_id || !doctor.team_id || 
+            doctor.district_id.toString() !== kamUser.district_id.toString() ||
+            doctor.team_id.toString() !== kamUser.team_id.toString()) {
           return errorResponse('You do not have access to this doctor', 403);
         }
       } else {

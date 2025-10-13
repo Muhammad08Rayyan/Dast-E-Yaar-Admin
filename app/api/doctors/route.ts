@@ -26,15 +26,17 @@ export async function GET(request: NextRequest) {
 
     // Build query
     const query: any = {};
-    
-    // KAM scoping: Only show doctors from their team
+
+    // KAM scoping: Only show doctors from their district+team combination
     if (authResult.user?.role === 'kam') {
-      // Get KAM's team
+      // Get KAM's district and team
       const kamUser = await User.findById(authResult.user.userId);
-      if (kamUser && kamUser.team_id) {
+      if (kamUser && kamUser.district_id && kamUser.team_id) {
+        query.district_id = kamUser.district_id;
         query.team_id = kamUser.team_id;
       } else {
-        // If KAM has no team, show no doctors
+        // If KAM has no district or team, show no doctors
+        query.district_id = null;
         query.team_id = null;
       }
     }
@@ -99,11 +101,11 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     const body = await request.json();
-    const { email, password, name, phone, team_id, pmdc_number, specialty } = body;
+    const { email, password, name, phone, team_id, district_id, pmdc_number, specialty } = body;
 
     // Validate required fields
-    if (!email || !password || !name || !phone || !team_id || !pmdc_number || !specialty) {
-      return errorResponse('All fields are required', 400);
+    if (!email || !password || !name || !phone || !team_id || !district_id || !pmdc_number || !specialty) {
+      return errorResponse('All fields are required (email, password, name, phone, team_id, district_id, pmdc_number, specialty)', 400);
     }
 
     // Check if email already exists
@@ -112,20 +114,29 @@ export async function POST(request: NextRequest) {
       return errorResponse('Email already exists', 400);
     }
 
-    // Get the team to verify it exists and get district
-    const team = await Team.findById(team_id).populate('district_id');
+    // Verify team exists
+    const team = await Team.findById(team_id);
     if (!team) {
       return errorResponse('Team not found', 404);
     }
 
-    // Auto-assign district from team
-    const district_id = team.district_id._id;
+    // Verify district exists
+    const District = (await import('@/lib/models/District')).default;
+    const district = await District.findById(district_id);
+    if (!district) {
+      return errorResponse('District not found', 404);
+    }
 
-    // Find KAM assigned to this team
-    const kam = await User.findOne({ team_id: team_id, role: 'kam' });
+    // Find KAM assigned to this district+team combination
+    const kam = await User.findOne({ 
+      district_id: district_id, 
+      team_id: team_id, 
+      role: 'kam', 
+      status: 'active' 
+    });
     if (!kam) {
       return errorResponse(
-        `No Key Account Manager (KAM) is assigned to team "${team.name}". Please assign a KAM to this team first.`,
+        `No Key Account Manager (KAM) is assigned to district "${district.name}" with team "${team.name}". Please assign a KAM to this district+team combination first.`,
         400
       );
     }
@@ -133,7 +144,7 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create doctor with auto-assigned KAM from team
+    // Create doctor with auto-assigned KAM from district+team combination
     const doctor = await Doctor.create({
       email: email.toLowerCase(),
       password: hashedPassword,
@@ -141,7 +152,7 @@ export async function POST(request: NextRequest) {
       phone,
       district_id,
       team_id,
-      kam_id: kam._id, // Auto-assign KAM from team
+      kam_id: kam._id, // Auto-assign KAM from district+team combination
       pmdc_number,
       specialty,
       status: 'active'

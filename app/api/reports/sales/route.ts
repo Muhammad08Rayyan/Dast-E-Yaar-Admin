@@ -37,14 +37,16 @@ export async function GET(request: NextRequest) {
 
     // Role-based filtering
     const doctorQuery: any = { status: 'active' };
-    
+
     if (authResult.user?.role === 'kam') {
-      // KAM can only see their own team's data
+      // KAM can only see their own district+team combination's data
       const kamUser = await User.findById(authResult.user.userId);
-      if (kamUser && kamUser.team_id) {
+      if (kamUser && kamUser.district_id && kamUser.team_id) {
+        doctorQuery.district_id = kamUser.district_id;
         doctorQuery.team_id = kamUser.team_id;
       } else {
-        // If KAM has no team, show no data
+        // If KAM has no district or team, show no data
+        doctorQuery.district_id = null;
         doctorQuery.team_id = null;
       }
     } else if (teamId) {
@@ -56,7 +58,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get doctors based on filters
-    const doctors = await Doctor.find(doctorQuery).select('_id name team_id');
+    const doctors = await Doctor.find(doctorQuery).select('_id name team_id district_id');
     const doctorIds = doctors.map(d => d._id);
 
     if (doctorIds.length === 0) {
@@ -139,29 +141,40 @@ export async function GET(request: NextRequest) {
     // Sort by revenue descending
     doctorPerformance.sort((a, b) => b.revenue - a.revenue);
 
-    // Get team information if applicable
-    let teamInfo = null;
-    if (authResult.user?.role === 'kam' || teamId) {
-      // For KAM, use the team_id from the KAM user
-      let teamIdToFind: string | undefined = teamId;
+    // Get team or district information if applicable
+    let contextInfo = null;
+    if (teamId) {
+      // Get team info when filtering by team
+      const team = await Team.findById(teamId);
+      if (team) {
+        contextInfo = {
+          type: 'team',
+          _id: team._id,
+          name: team.name
+        };
+      }
+    } else if (districtId || authResult.user?.role === 'kam') {
+      // Get district info when filtering by district or for KAM
+      let districtIdToFind: string | undefined = districtId;
       if (authResult.user?.role === 'kam') {
         const kamUser = await User.findById(authResult.user.userId);
-        teamIdToFind = kamUser?.team_id?.toString();
+        districtIdToFind = kamUser?.district_id?.toString();
       }
-      
-      if (teamIdToFind) {
-        const team = await Team.findById(teamIdToFind)
-          .populate('district_id', 'name code');
-        
-        if (team) {
-          // Find KAM for this team
-          const teamKam = await User.findOne({ team_id: team._id, role: 'kam' });
-          
-          teamInfo = {
-            _id: team._id,
-            name: team.name,
-            district: team.district_id,
-            kam: teamKam ? { name: teamKam.name, email: teamKam.email } : null
+
+      if (districtIdToFind) {
+        const District = (await import('@/lib/models/District')).default;
+        const district = await District.findById(districtIdToFind);
+
+        if (district) {
+          // Find KAM for this district
+          const districtKam = await User.findOne({ district_id: district._id, role: 'kam', status: 'active' });
+
+          contextInfo = {
+            type: 'district',
+            _id: district._id,
+            name: district.name,
+            code: district.code,
+            kam: districtKam ? { name: districtKam.name, email: districtKam.email } : null
           };
         }
       }
@@ -176,7 +189,7 @@ export async function GET(request: NextRequest) {
         averageOrderValue: Math.round(averageOrderValue * 100) / 100,
         fulfillmentRate: Math.round(fulfillmentRate * 100) / 100
       },
-      team: teamInfo,
+      context: contextInfo,
       doctors: doctorPerformance,
       dateRange: {
         from: dateFrom || null,

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { authMiddleware } from '@/lib/auth/middleware';
 import { connectDB } from '@/lib/db/connection';
-import Product from '@/lib/models/Product';
+import { Product, TeamProduct, User } from '@/lib/models';
 import { successResponse, errorResponse } from '@/lib/utils/response';
 
 // GET /api/products - List all products
@@ -29,15 +29,46 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    // Fetch products
-    const [products, total] = await Promise.all([
-      Product.find(query)
-        .sort({ name: 1 })
-        .limit(limit)
-        .skip(skip)
-        .lean(),
-      Product.countDocuments(query),
-    ]);
+    let products: any[] = [];
+    let total = 0;
+
+    // Role-based filtering
+    if (authResult.user?.role === 'kam') {
+      // KAM can only see products assigned to their team
+      const kamUser = await User.findById(authResult.user.userId);
+      if (kamUser && kamUser.team_id) {
+        // Get team products for this KAM's team
+        const teamProducts = await TeamProduct.find({ 
+          team_id: kamUser.team_id, 
+          status: 'active' 
+        }).populate('product_id');
+        
+        const productIds = teamProducts.map(tp => tp.product_id._id);
+        
+        // Filter products by team assignment
+        if (productIds.length > 0) {
+          const teamQuery = { ...query, _id: { $in: productIds } };
+          [products, total] = await Promise.all([
+            Product.find(teamQuery)
+              .sort({ name: 1 })
+              .limit(limit)
+              .skip(skip)
+              .lean(),
+            Product.countDocuments(teamQuery),
+          ]);
+        }
+      }
+    } else {
+      // Super Admin sees all products
+      [products, total] = await Promise.all([
+        Product.find(query)
+          .sort({ name: 1 })
+          .limit(limit)
+          .skip(skip)
+          .lean(),
+        Product.countDocuments(query),
+      ]);
+    }
 
     return successResponse({
       products,

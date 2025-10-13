@@ -1,8 +1,7 @@
 import { NextRequest } from 'next/server';
 import { authMiddleware } from '@/lib/auth/middleware';
-import connectDB from '@/lib/mongodb';
-import TeamProduct from '@/lib/models/TeamProduct';
-import Product from '@/lib/models/Product';
+import { connectDB } from '@/lib/db/connection';
+import { TeamProduct, Product } from '@/lib/models';
 import { successResponse, errorResponse } from '@/lib/utils/response';
 import mongoose from 'mongoose';
 
@@ -87,8 +86,6 @@ export async function POST(
       const assignments = productIds.map((productId) => ({
         team_id: new mongoose.Types.ObjectId(id),
         product_id: new mongoose.Types.ObjectId(productId),
-        assigned_by: new mongoose.Types.ObjectId(authResult.user?.userId),
-        assigned_at: new Date(),
         status: 'active',
       }));
 

@@ -6,8 +6,8 @@ export interface IUser extends Document {
   password: string;
   name: string;
   role: 'super_admin' | 'kam';
-  team_id: mongoose.Types.ObjectId | null;
   district_id: mongoose.Types.ObjectId | null;
+  team_id: mongoose.Types.ObjectId | null; // For KAM: composite with district_id
   status: 'active' | 'inactive';
   created_at: Date;
   updated_at: Date;
@@ -36,14 +36,14 @@ const UserSchema = new Schema<IUser>(
       enum: ['super_admin', 'kam'],
       required: true,
     },
-    team_id: {
-      type: Schema.Types.ObjectId,
-      ref: 'Team',
-      default: null,
-    },
     district_id: {
       type: Schema.Types.ObjectId,
       ref: 'District',
+      default: null,
+    },
+    team_id: {
+      type: Schema.Types.ObjectId,
+      ref: 'Team',
       default: null,
     },
     status: {

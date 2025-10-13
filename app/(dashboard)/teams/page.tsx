@@ -5,7 +5,6 @@ import { Plus, Search, Edit, Trash2, Users, TrendingUp, Package } from 'lucide-r
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -20,20 +19,12 @@ interface Team {
   _id: string;
   name: string;
   description: string;
-  district_id: { _id: string; name: string; code: string };
-  kam?: { _id: string; name: string; email: string } | null;
   status: string;
   stats?: {
     doctors: number;
     prescriptions: number;
   };
   created_at: string;
-}
-
-interface District {
-  _id: string;
-  name: string;
-  code: string;
 }
 
 interface Product {
@@ -47,11 +38,9 @@ interface Product {
 
 export default function TeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
-  const [districts, setDistricts] = useState<District[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [districtFilter, setDistrictFilter] = useState('');
 
   // Dialog states
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -71,7 +60,6 @@ export default function TeamsPage() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    district_id: '',
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -96,7 +84,6 @@ export default function TeamsPage() {
       const token = localStorage.getItem('token');
       const params = new URLSearchParams();
       if (search) params.append('search', search);
-      if (districtFilter) params.append('district_id', districtFilter);
       params.append('limit', '100');
 
       const response = await fetch(`/api/teams?${params}`, {
@@ -115,22 +102,7 @@ export default function TeamsPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, districtFilter]);
-
-  const fetchDistricts = useCallback(async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/districts?limit=100', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await response.json();
-      if (data.success) {
-        setDistricts(data.data.districts || []);
-      }
-    } catch (error) {
-      console.error('Error fetching districts:', error);
-    }
-  }, []);
+  }, [search]);
 
   const fetchTeamProducts = useCallback(async (teamId: string) => {
     setLoadingProducts(true);
@@ -156,8 +128,7 @@ export default function TeamsPage() {
 
   useEffect(() => {
     fetchCurrentUser();
-    fetchDistricts();
-  }, [fetchCurrentUser, fetchDistricts]);
+  }, [fetchCurrentUser]);
 
   useEffect(() => {
     if (currentUser) {
@@ -169,7 +140,6 @@ export default function TeamsPage() {
     // Validate form
     const errors: Record<string, string> = {};
     if (!formData.name.trim()) errors.name = 'Team name is required';
-    if (!formData.district_id) errors.district_id = 'District is required';
 
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
@@ -191,7 +161,7 @@ export default function TeamsPage() {
       const data = await response.json();
       if (data.success) {
         setIsCreateOpen(false);
-        setFormData({ name: '', description: '', district_id: '' });
+        setFormData({ name: '', description: '' });
         setFormErrors({});
         fetchTeams();
         alert('Team created successfully!');
@@ -212,7 +182,6 @@ export default function TeamsPage() {
     // Validate form
     const errors: Record<string, string> = {};
     if (!formData.name.trim()) errors.name = 'Team name is required';
-    if (!formData.district_id) errors.district_id = 'District is required';
 
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
@@ -235,7 +204,7 @@ export default function TeamsPage() {
       if (data.success) {
         setIsEditOpen(false);
         setSelectedTeam(null);
-        setFormData({ name: '', description: '', district_id: '' });
+        setFormData({ name: '', description: '' });
         setFormErrors({});
         fetchTeams();
         alert('Team updated successfully!');
@@ -344,7 +313,6 @@ export default function TeamsPage() {
     setFormData({
       name: team.name,
       description: team.description || '',
-      district_id: team.district_id._id,
     });
     setFormErrors({});
     setIsEditOpen(true);
@@ -385,7 +353,7 @@ export default function TeamsPage() {
   // };
 
   const openCreateDialog = () => {
-    setFormData({ name: '', description: '', district_id: '' });
+    setFormData({ name: '', description: '' });
     setFormErrors({});
     setIsCreateOpen(true);
   };
@@ -430,27 +398,14 @@ export default function TeamsPage() {
       {/* Filters */}
       <Card>
         <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black" />
-              <Input
-                placeholder="Search teams..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select
-              value={districtFilter}
-              onChange={(e) => setDistrictFilter(e.target.value)}
-            >
-              <option value="">All Districts</option>
-              {districts.map((district) => (
-                <option key={district._id} value={district._id}>
-                  {district.name}
-                </option>
-              ))}
-            </Select>
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black" />
+            <Input
+              placeholder="Search teams..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10"
+            />
           </div>
         </CardContent>
       </Card>
@@ -464,9 +419,6 @@ export default function TeamsPage() {
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-black mb-1">{team.name}</h3>
                   <p className="text-sm text-gray-600 mb-2">{team.description || 'No description'}</p>
-                  <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    {team.district_id.name}
-                  </div>
                 </div>
                 {currentUser?.role === 'super_admin' && (
                   <div className="flex gap-2">
@@ -492,20 +444,6 @@ export default function TeamsPage() {
               </div>
 
               <div className="border-t pt-4">
-                {team.kam && (
-                  <div className="mb-3">
-                    <p className="text-sm font-medium text-gray-700">Account Key Manager</p>
-                    <p className="text-sm text-black">{team.kam.name}</p>
-                    <p className="text-xs text-gray-500">{team.kam.email}</p>
-                  </div>
-                )}
-                {!team.kam && (
-                  <div className="mb-3">
-                    <p className="text-sm font-medium text-gray-700">Account Key Manager</p>
-                    <p className="text-sm text-gray-500 italic">No KAM assigned</p>
-                  </div>
-                )}
-
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-2">
@@ -569,7 +507,7 @@ export default function TeamsPage() {
           <DialogHeader>
             <DialogTitle className="text-black">Create New Team</DialogTitle>
             <DialogDescription>
-              Create a new team within a district. KAM will be assigned separately.
+              Create a new independent team. Teams are not tied to districts.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 p-6">
@@ -591,23 +529,6 @@ export default function TeamsPage() {
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="e.g., Primary sales team for cardiovascular products"
               />
-            </div>
-            <div>
-              <Label required>District</Label>
-              <Select
-                value={formData.district_id}
-                onChange={(e) => setFormData({ ...formData, district_id: e.target.value })}
-              >
-                <option value="">Select District</option>
-                {districts.map((district) => (
-                  <option key={district._id} value={district._id}>
-                    {district.name} ({district.code})
-                  </option>
-                ))}
-              </Select>
-              {formErrors.district_id && (
-                <p className="text-red-500 text-sm mt-1">{formErrors.district_id}</p>
-              )}
             </div>
           </div>
           <DialogFooter>
@@ -636,7 +557,7 @@ export default function TeamsPage() {
           <DialogHeader>
             <DialogTitle className="text-black">Edit Team</DialogTitle>
             <DialogDescription>
-              Update team information. KAM is assigned separately via Users page.
+              Update team information. Teams are independent of districts.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 p-6">
@@ -656,23 +577,6 @@ export default function TeamsPage() {
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               />
-            </div>
-            <div>
-              <Label required>District</Label>
-              <Select
-                value={formData.district_id}
-                onChange={(e) => setFormData({ ...formData, district_id: e.target.value })}
-              >
-                <option value="">Select District</option>
-                {districts.map((district) => (
-                  <option key={district._id} value={district._id}>
-                    {district.name} ({district.code})
-                  </option>
-                ))}
-              </Select>
-              {formErrors.district_id && (
-                <p className="text-red-500 text-sm mt-1">{formErrors.district_id}</p>
-              )}
             </div>
           </div>
           <DialogFooter>
@@ -707,7 +611,7 @@ export default function TeamsPage() {
           {selectedTeam && (
             <div className="p-6">
               <p className="font-medium text-black">{selectedTeam.name}</p>
-              <p className="text-sm text-gray-600">{selectedTeam.district_id.name}</p>
+              <p className="text-sm text-gray-600">{selectedTeam.description || 'No description'}</p>
             </div>
           )}
           <DialogFooter>

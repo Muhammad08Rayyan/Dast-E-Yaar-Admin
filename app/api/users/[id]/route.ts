@@ -27,8 +27,8 @@ export async function GET(
 
     const user = await User.findById(id)
       .select('-password')
-      .populate('team_id', 'name')
-      .populate('district_id', 'name code');
+      .populate('district_id', 'name code')
+      .populate('team_id', 'name');
 
     if (!user) {
       return errorResponse('User not found', 404);
@@ -61,7 +61,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { email, password, name, role, team_id, district_id, status } = body;
+    const { email, password, name, role, district_id, team_id, status } = body;
 
     const user = await User.findById(id);
     if (!user) {
@@ -82,16 +82,51 @@ export async function PUT(
     if (role && ['super_admin', 'kam'].includes(role)) {
       user.role = role;
     }
-    
-    // Handle team and district assignment for KAM
+
+    // Handle district and team assignment for KAM
+    const oldDistrictId = user.district_id?.toString();
     const oldTeamId = user.team_id?.toString();
-    if (team_id !== undefined) {
+    
+    if (district_id !== undefined || team_id !== undefined) {
+      // For KAM, both district and team are required
+      if (role === 'kam' && (!district_id || !team_id)) {
+        return errorResponse('Both district and team are required for KAM role', 400);
+      }
+      
+      if (role === 'kam' && district_id && team_id) {
+        const District = (await import('@/lib/models/District')).default;
+        const Team = (await import('@/lib/models/Team')).default;
+        
+        const district = await District.findById(district_id);
+        if (!district) {
+          return errorResponse('District not found', 404);
+        }
+
+        const team = await Team.findById(team_id);
+        if (!team) {
+          return errorResponse('Team not found', 404);
+        }
+
+        // Check if another KAM is already assigned to this district+team combination
+        const existingKam = await User.findOne({
+          district_id,
+          team_id,
+          role: 'kam',
+          status: 'active',
+          _id: { $ne: id } // Exclude current user
+        });
+        if (existingKam) {
+          return errorResponse(
+            `District "${district.name}" with Team "${team.name}" already has an active KAM assigned (${existingKam.name})`, 
+            400
+          );
+        }
+      }
+      
+      user.district_id = role === 'kam' ? district_id : null;
       user.team_id = role === 'kam' ? team_id : null;
     }
-    if (district_id !== undefined) {
-      user.district_id = role === 'kam' ? district_id : null;
-    }
-    
+
     if (status && ['active', 'inactive'].includes(status)) {
       user.status = status;
     }
@@ -103,21 +138,23 @@ export async function PUT(
 
     await user.save();
 
-    // If team changed and user is KAM, update all doctors in the new team
+    // If district or team changed and user is KAM, update all doctors in the new district+team combination
+    const newDistrictId = user.district_id?.toString();
     const newTeamId = user.team_id?.toString();
-    if (role === 'kam' && newTeamId && newTeamId !== oldTeamId) {
+    if (role === 'kam' && newDistrictId && newTeamId && 
+        (newDistrictId !== oldDistrictId || newTeamId !== oldTeamId)) {
       const Doctor = (await import('@/lib/models/Doctor')).default;
       await Doctor.updateMany(
-        { team_id: newTeamId },
+        { district_id: newDistrictId, team_id: newTeamId },
         { kam_id: user._id }
       );
     }
 
-    // Populate team and district, remove password from response
+    // Populate district and team, remove password from response
     const updatedUser = await User.findById(id)
       .select('-password')
-      .populate('team_id', 'name')
-      .populate('district_id', 'name code');
+      .populate('district_id', 'name code')
+      .populate('team_id', 'name');
 
     return successResponse({ user: updatedUser }, 'User updated successfully');
   } catch (error: any) {

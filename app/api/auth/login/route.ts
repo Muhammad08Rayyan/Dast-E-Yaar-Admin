@@ -40,7 +40,6 @@ export async function POST(req: NextRequest) {
         userId: user._id.toString(),
         email: user.email,
         role: user.role,
-        team_id: user.team_id ? user.team_id.toString() : null,
         district_id: user.district_id ? user.district_id.toString() : null,
       });
 
@@ -52,7 +51,6 @@ export async function POST(req: NextRequest) {
             email: user.email,
             name: user.name,
             role: user.role,
-            team_id: user.team_id,
             district_id: user.district_id,
           },
           token,
@@ -85,8 +83,6 @@ export async function POST(req: NextRequest) {
       userId: distributor._id.toString(),
       email: distributor.email,
       role: 'distributor',
-      team_id: null,
-      district_id: null,
       city_id: distributor.city_id ? distributor.city_id.toString() : null,
     });
 

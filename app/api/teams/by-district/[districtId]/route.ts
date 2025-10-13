@@ -4,10 +4,10 @@ import { connectDB } from '@/lib/db/connection';
 import { Team } from '@/lib/models';
 import { successResponse, errorResponse } from '@/lib/utils/response';
 
-// GET /api/teams/by-district/[districtId] - Get teams for a specific district
+// GET /api/teams/by-district/[districtId] - DEPRECATED: Teams are now independent of districts
+// This route now returns all active teams for backwards compatibility
 export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ districtId: string }> }
+  request: NextRequest
 ) {
   try {
     const authResult = await authMiddleware(request);
@@ -17,16 +17,15 @@ export async function GET(
 
     await connectDB();
 
-    const { districtId } = await params;
+    // Note: districtId parameter is ignored as teams are now independent of districts
     const teams = await Team.find({
-      district_id: districtId,
       status: 'active'
     })
       .sort({ name: 1 });
 
     return successResponse({ teams });
   } catch (error: any) {
-    console.error('Error fetching teams by district:', error);
+    console.error('Error fetching teams:', error);
     return errorResponse(error.message || 'Failed to fetch teams');
   }
 }

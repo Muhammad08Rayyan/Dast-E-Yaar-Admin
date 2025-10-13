@@ -4,7 +4,6 @@ export interface ITeam extends Document {
   _id: string;
   name: string;
   description: string;
-  district_id: mongoose.Types.ObjectId;
   status: 'active' | 'inactive';
   created_at: Date;
   updated_at: Date;
@@ -22,11 +21,6 @@ const TeamSchema = new Schema<ITeam>(
       trim: true,
       default: '',
     },
-    district_id: {
-      type: Schema.Types.ObjectId,
-      ref: 'District',
-      required: true,
-    },
     status: {
       type: String,
       enum: ['active', 'inactive'],
@@ -39,7 +33,7 @@ const TeamSchema = new Schema<ITeam>(
 );
 
 // Index for efficient queries
-TeamSchema.index({ district_id: 1, status: 1 });
+TeamSchema.index({ status: 1 });
 
 const Team: Model<ITeam> = mongoose.models.Team || mongoose.model<ITeam>('Team', TeamSchema);
 

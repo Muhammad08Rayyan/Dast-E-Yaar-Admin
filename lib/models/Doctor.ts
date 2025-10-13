@@ -51,7 +51,7 @@ const DoctorSchema = new Schema<IDoctor>(
     kam_id: {
       type: Schema.Types.ObjectId,
       ref: 'User',
-      required: false, // Auto-assigned based on team
+      required: false, // Auto-assigned based on district
     },
     pmdc_number: {
       type: String,

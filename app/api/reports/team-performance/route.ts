@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { authMiddleware } from '@/lib/auth/middleware';
 import { connectDB } from '@/lib/db/connection';
-import { Team, Doctor, Prescription, Order, User } from '@/lib/models';
+import { Team, Doctor, Prescription, Order } from '@/lib/models';
 import { successResponse, errorResponse } from '@/lib/utils/response';
 
 // GET /api/reports/team-performance - Get team-wise performance (Super Admin only)
@@ -30,20 +30,21 @@ export async function GET(request: NextRequest) {
       dateFilter.$lte = endDate;
     }
 
-    // Get teams
+    // Get teams (teams are now independent of districts)
     const teamQuery: any = { status: 'active' };
-    if (districtId) {
-      teamQuery.district_id = districtId;
-    }
 
-    const teams = await Team.find(teamQuery)
-      .populate('district_id', 'name code');
+    const teams = await Team.find(teamQuery);
 
     // Calculate performance for each team
     const teamPerformance = await Promise.all(
       teams.map(async (team) => {
-        // Get doctors in this team
-        const doctors = await Doctor.find({ team_id: team._id, status: 'active' });
+        // Get doctors in this team, optionally filtered by district
+        const doctorQuery: any = { team_id: team._id, status: 'active' };
+        if (districtId) {
+          doctorQuery.district_id = districtId;
+        }
+
+        const doctors = await Doctor.find(doctorQuery);
         const doctorIds = doctors.map(d => d._id);
 
         // Build prescription query
@@ -68,15 +69,10 @@ export async function GET(request: NextRequest) {
         const fulfilledOrders = orders.filter(o => o.order_status === 'fulfilled').length;
         const fulfillmentRate = orders.length > 0 ? (fulfilledOrders / orders.length) * 100 : 0;
 
-        // Find KAM for this team
-        const teamKam = await User.findOne({ team_id: team._id, role: 'kam' });
-
         return {
           team: {
             _id: team._id,
-            name: team.name,
-            district: team.district_id,
-            kam: teamKam ? { name: teamKam.name, email: teamKam.email } : null
+            name: team.name
           },
           stats: {
             doctors: doctors.length,

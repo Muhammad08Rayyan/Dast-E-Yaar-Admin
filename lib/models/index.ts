@@ -6,6 +6,7 @@ import Doctor from './Doctor';
 import User from './User';
 import Product from './Product';
 import DistrictProduct from './DistrictProduct';
+import TeamProduct from './TeamProduct';
 import Order from './Order';
 import Patient from './Patient';
 import Prescription from './Prescription';
@@ -19,6 +20,7 @@ export {
   User,
   Product,
   DistrictProduct,
+  TeamProduct,
   Order,
   Patient,
   Prescription,
@@ -34,6 +36,7 @@ export function ensureModelsLoaded() {
     User: User.modelName,
     Product: Product.modelName,
     DistrictProduct: DistrictProduct.modelName,
+    TeamProduct: TeamProduct.modelName,
     Order: Order.modelName,
     Patient: Patient.modelName,
     Prescription: Prescription.modelName,
