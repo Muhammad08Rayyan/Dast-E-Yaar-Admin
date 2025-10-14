@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const dateFrom = searchParams.get('dateFrom') || '';
     const dateTo = searchParams.get('dateTo') || '';
+    const teamId = searchParams.get('teamId') || '';
 
     // Build date filter
     const dateFilter: any = {};
@@ -31,6 +32,11 @@ export async function GET(request: NextRequest) {
 
     // Get teams (teams are now independent of districts)
     const teamQuery: any = { status: 'active' };
+    
+    // Filter by specific team if provided
+    if (teamId) {
+      teamQuery._id = teamId;
+    }
 
     const teams = await Team.find(teamQuery);
 

@@ -164,6 +164,7 @@ export default function ReportsPage() {
       const params = new URLSearchParams();
       if (dateFrom) params.append('dateFrom', dateFrom);
       if (dateTo) params.append('dateTo', dateTo);
+      if (selectedTeam) params.append('teamId', selectedTeam);
 
       const response = await fetch(`/api/reports/team-performance?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -177,7 +178,7 @@ export default function ReportsPage() {
     } finally {
       setLoading(false);
     }
-  }, [dateFrom, dateTo]);
+  }, [dateFrom, dateTo, selectedTeam]);
 
   useEffect(() => {
     fetchCurrentUser();
@@ -297,7 +298,11 @@ export default function ReportsPage() {
                 <Select
                   id="reportType"
                   value={reportType}
-                  onChange={(e) => setReportType(e.target.value as 'sales' | 'team')}
+                  onChange={(e) => {
+                    setReportType(e.target.value as 'sales' | 'team');
+                    // Clear team filter when switching report types
+                    setSelectedTeam('');
+                  }}
                 >
                   <option value="sales">Sales Report</option>
                   <option value="team">Team Performance</option>
@@ -336,6 +341,23 @@ export default function ReportsPage() {
                     </Select>
                   </div>
                 </>
+              )}
+              {reportType === 'team' && (
+                <div className="md:col-span-2">
+                  <Label htmlFor="teamFilter">Team</Label>
+                  <Select
+                    id="teamFilter"
+                    value={selectedTeam}
+                    onChange={(e) => setSelectedTeam(e.target.value)}
+                  >
+                    <option value="">All Teams</option>
+                    {teams.map((team) => (
+                      <option key={team._id} value={team._id}>
+                        {team.name}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
               )}
               <div className="md:col-span-2 flex gap-2 items-end">
                 <Button
