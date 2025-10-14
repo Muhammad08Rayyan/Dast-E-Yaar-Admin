@@ -48,8 +48,6 @@ interface TeamPerformance {
     team: {
       _id: string;
       name: string;
-      district: { name: string };
-      kam: { name: string } | null;
     };
     stats: {
       doctors: number;
@@ -166,7 +164,6 @@ export default function ReportsPage() {
       const params = new URLSearchParams();
       if (dateFrom) params.append('dateFrom', dateFrom);
       if (dateTo) params.append('dateTo', dateTo);
-      if (selectedDistrict) params.append('districtId', selectedDistrict);
 
       const response = await fetch(`/api/reports/team-performance?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -180,7 +177,7 @@ export default function ReportsPage() {
     } finally {
       setLoading(false);
     }
-  }, [dateFrom, dateTo, selectedDistrict]);
+  }, [dateFrom, dateTo]);
 
   useEffect(() => {
     fetchCurrentUser();
@@ -307,37 +304,39 @@ export default function ReportsPage() {
                 </Select>
               </div>
               {reportType === 'sales' && (
-                <div className="md:col-span-2">
-                  <Label htmlFor="team">Team</Label>
-                  <Select
-                    id="team"
-                    value={selectedTeam}
-                    onChange={(e) => setSelectedTeam(e.target.value)}
-                  >
-                    <option value="">All Teams</option>
-                    {teams.map((team) => (
-                      <option key={team._id} value={team._id}>
-                        {team.name}
-                      </option>
-                    ))}
-                  </Select>
-                </div>
+                <>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="team">Team</Label>
+                    <Select
+                      id="team"
+                      value={selectedTeam}
+                      onChange={(e) => setSelectedTeam(e.target.value)}
+                    >
+                      <option value="">All Teams</option>
+                      {teams.map((team) => (
+                        <option key={team._id} value={team._id}>
+                          {team.name}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="district">District</Label>
+                    <Select
+                      id="district"
+                      value={selectedDistrict}
+                      onChange={(e) => setSelectedDistrict(e.target.value)}
+                    >
+                      <option value="">All Districts</option>
+                      {districts.map((district) => (
+                        <option key={district._id} value={district._id}>
+                          {district.name}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                </>
               )}
-              <div className="md:col-span-2">
-                <Label htmlFor="district">District</Label>
-                <Select
-                  id="district"
-                  value={selectedDistrict}
-                  onChange={(e) => setSelectedDistrict(e.target.value)}
-                >
-                  <option value="">All Districts</option>
-                  {districts.map((district) => (
-                    <option key={district._id} value={district._id}>
-                      {district.name}
-                    </option>
-                  ))}
-                </Select>
-              </div>
               <div className="md:col-span-2 flex gap-2 items-end">
                 <Button
                   onClick={applyFilters}
@@ -569,8 +568,6 @@ export default function ReportsPage() {
                   <thead>
                     <tr className="border-b">
                       <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Team</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">District</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">KAM</th>
                       <th className="text-right py-3 px-4 text-sm font-medium text-gray-700">Doctors</th>
                       <th className="text-right py-3 px-4 text-sm font-medium text-gray-700">Prescriptions</th>
                       <th className="text-right py-3 px-4 text-sm font-medium text-gray-700">Orders</th>
@@ -589,8 +586,6 @@ export default function ReportsPage() {
                             <span className="font-medium text-black">{teamData.team.name}</span>
                           </div>
                         </td>
-                        <td className="py-3 px-4 text-black">{teamData.team.district.name}</td>
-                        <td className="py-3 px-4 text-black">{teamData.team.kam ? teamData.team.kam.name : 'No KAM'}</td>
                         <td className="text-right py-3 px-4 text-black">{teamData.stats.doctors}</td>
                         <td className="text-right py-3 px-4 text-black">{teamData.stats.prescriptions}</td>
                         <td className="text-right py-3 px-4 text-black">{teamData.stats.orders}</td>

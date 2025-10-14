@@ -17,7 +17,6 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const dateFrom = searchParams.get('dateFrom') || '';
     const dateTo = searchParams.get('dateTo') || '';
-    const districtId = searchParams.get('districtId') || '';
 
     // Build date filter
     const dateFilter: any = {};
@@ -38,11 +37,8 @@ export async function GET(request: NextRequest) {
     // Calculate performance for each team
     const teamPerformance = await Promise.all(
       teams.map(async (team) => {
-        // Get doctors in this team, optionally filtered by district
+        // Get doctors in this team
         const doctorQuery: any = { team_id: team._id, status: 'active' };
-        if (districtId) {
-          doctorQuery.district_id = districtId;
-        }
 
         const doctors = await Doctor.find(doctorQuery);
         const doctorIds = doctors.map(d => d._id);
