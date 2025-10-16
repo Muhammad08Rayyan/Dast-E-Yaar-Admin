@@ -170,13 +170,16 @@ async function syncProducts() {
       }
     }
     if (errors.length > 0) {
-      errors.forEach(err => 
+      errors.forEach(err => console.error(err));
     }
 
     await mongoose.disconnect();
     process.exit(0);
   } catch (error: any) {
     if (error.stack) {
+      console.error(error.stack);
+    } else {
+      console.error(error);
     }
     await mongoose.disconnect();
     process.exit(1);
