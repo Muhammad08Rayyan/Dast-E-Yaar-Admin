@@ -78,7 +78,6 @@ export async function POST(request: NextRequest) {
       `Product ${status === 'active' ? 'enabled' : 'disabled'} for your district`
     );
   } catch (error: any) {
-    console.error('Error toggling district product:', error);
     return errorResponse(error.message || 'Failed to update product availability');
   }
 }

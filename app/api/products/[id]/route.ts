@@ -32,7 +32,6 @@ export async function GET(
 
     return successResponse({ product });
   } catch (error: any) {
-    console.error('Error fetching product:', error);
     return errorResponse(error.message || 'Failed to fetch product');
   }
 }
@@ -95,7 +94,6 @@ export async function PUT(
       'Product updated successfully'
     );
   } catch (error: any) {
-    console.error('Error updating product:', error);
     return errorResponse(error.message || 'Failed to update product');
   }
 }
@@ -134,7 +132,6 @@ export async function DELETE(
 
     return successResponse(null, 'Product deleted successfully');
   } catch (error: any) {
-    console.error('Error deleting product:', error);
     return errorResponse(error.message || 'Failed to delete product');
   }
 }

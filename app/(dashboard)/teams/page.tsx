@@ -75,7 +75,6 @@ export default function TeamsPage() {
         setCurrentUser(data.data);
       }
     } catch (error) {
-      console.error('Error fetching current user:', error);
     }
   }, []);
 
@@ -93,11 +92,9 @@ export default function TeamsPage() {
       if (data.success) {
         setTeams(data.data.teams || []);
       } else {
-        console.error('Failed to fetch teams:', data);
         setTeams([]);
       }
     } catch (error) {
-      console.error('Error fetching teams:', error);
       setTeams([]);
     } finally {
       setLoading(false);
@@ -120,7 +117,6 @@ export default function TeamsPage() {
         setSelectedProductIds(assigned);
       }
     } catch (error) {
-      console.error('Error fetching team products:', error);
     } finally {
       setLoadingProducts(false);
     }
@@ -169,7 +165,6 @@ export default function TeamsPage() {
         alert(data.message || 'Failed to create team');
       }
     } catch (error) {
-      console.error('Error creating team:', error);
       alert('An error occurred while creating the team');
     } finally {
       setSubmitting(false);
@@ -212,7 +207,6 @@ export default function TeamsPage() {
         alert(data.message || 'Failed to update team');
       }
     } catch (error) {
-      console.error('Error updating team:', error);
       alert('An error occurred while updating the team');
     } finally {
       setSubmitting(false);
@@ -240,7 +234,6 @@ export default function TeamsPage() {
         alert(data.message || 'Failed to deactivate team');
       }
     } catch (error) {
-      console.error('Error deactivating team:', error);
       alert('An error occurred while deactivating the team');
     } finally {
       setSubmitting(false);
@@ -271,7 +264,6 @@ export default function TeamsPage() {
         alert(data.error?.message || 'Failed to assign products');
       }
     } catch (error) {
-      console.error('Error assigning products:', error);
       alert('An error occurred while assigning products');
     } finally {
       setSavingProducts(false);
@@ -342,7 +334,6 @@ export default function TeamsPage() {
         alert(data.error?.message || 'Failed to delete team');
       }
     } catch (error) {
-      console.error('Error deleting team:', error);
       alert('Failed to delete team');
     }
   };

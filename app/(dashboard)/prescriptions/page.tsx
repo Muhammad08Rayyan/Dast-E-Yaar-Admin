@@ -97,7 +97,7 @@ export default function PrescriptionsPage() {
         });
       }
     } catch (error) {
-      console.error("Error fetching prescriptions:", error);
+
     } finally {
       setLoading(false);
     }

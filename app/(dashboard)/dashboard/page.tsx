@@ -158,7 +158,7 @@ export default function DashboardPage() {
         setRecentOrders(ordersData.data);
       }
     } catch (error: any) {
-      console.error("Dashboard fetch error:", error);
+
       setError("Failed to load dashboard data. Please try again.");
     } finally {
       setLoading(false);
@@ -199,7 +199,7 @@ export default function DashboardPage() {
         }
       }
     } catch (error) {
-      console.error("Failed to sync orders:", error);
+
       // Silently fail - don't disrupt user experience
     } finally {
       setSyncing(false);
@@ -209,7 +209,6 @@ export default function DashboardPage() {
   const handleRefresh = async () => {
     await fetchDashboardData(true);
   };
-
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { color: string; icon: any }> = {

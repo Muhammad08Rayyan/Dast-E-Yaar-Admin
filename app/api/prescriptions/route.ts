@@ -66,9 +66,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: any) {
-    console.error('Error fetching prescriptions:', error);
     return errorResponse(error.message || 'Failed to fetch prescriptions');
   }
 }
-
 

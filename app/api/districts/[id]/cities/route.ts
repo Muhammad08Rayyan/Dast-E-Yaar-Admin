@@ -32,7 +32,7 @@ export async function GET(
       cities: district.cities
     });
   } catch (error: any) {
-    console.error('Error fetching district cities:', error);
+
     return errorResponse(error.message || 'Failed to fetch cities');
   }
 }
@@ -106,7 +106,7 @@ export async function POST(
       201
     );
   } catch (error: any) {
-    console.error('Error adding city:', error);
+
     return errorResponse(error.message || 'Failed to add city');
   }
 }

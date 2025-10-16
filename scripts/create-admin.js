@@ -23,10 +23,7 @@ const UserSchema = new mongoose.Schema({
 
 async function createSuperAdmin() {
   try {
-    console.log('Connecting to MongoDB...');
     await mongoose.connect(MONGODB_URI);
-    console.log('✅ Connected to MongoDB\n');
-
     const User = mongoose.models.User || mongoose.model('User', UserSchema);
 
     // New Super Admin credentials
@@ -37,7 +34,6 @@ async function createSuperAdmin() {
     const existingAdmin = await User.findOne({ email: newAdminEmail });
 
     if (existingAdmin) {
-      console.log('Admin already exists. Updating password...');
       const hashedPassword = await bcrypt.hash(newAdminPassword, 10);
       
       await User.updateOne(
@@ -50,9 +46,7 @@ async function createSuperAdmin() {
           status: 'active'
         }
       );
-      console.log('✅ Super Admin updated!\n');
     } else {
-      console.log('Creating new Super Admin...');
       const hashedPassword = await bcrypt.hash(newAdminPassword, 10);
       
       await User.create({
@@ -63,21 +57,10 @@ async function createSuperAdmin() {
         assigned_districts: [],
         status: 'active'
       });
-      console.log('✅ Super Admin created!\n');
     }
-
-    console.log('═══════════════════════════════════════');
-    console.log('🎉 SUPER ADMIN CREDENTIALS:');
-    console.log('═══════════════════════════════════════');
-    console.log('📧 Email:    ', newAdminEmail);
-    console.log('🔑 Password: ', newAdminPassword);
-    console.log('═══════════════════════════════════════\n');
-
     await mongoose.disconnect();
-    console.log('Disconnected from MongoDB');
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error:', error.message);
     process.exit(1);
   }
 }

@@ -58,7 +58,7 @@ export default function ProductsPage() {
         setProducts(data.data.products);
       }
     } catch (error) {
-      console.error('Error fetching products:', error);
+
     } finally {
       setLoading(false);
     }
@@ -143,7 +143,7 @@ export default function ProductsPage() {
         alert(data.error?.message || 'Failed to save product');
       }
     } catch (error) {
-      console.error('Error saving product:', error);
+
       alert('Failed to save product');
     } finally {
       setSubmitting(false);
@@ -169,7 +169,7 @@ export default function ProductsPage() {
         alert(data.error?.message || 'Failed to delete product');
       }
     } catch (error) {
-      console.error('Error deleting product:', error);
+
       alert('Failed to delete product');
     } finally {
       setSubmitting(false);

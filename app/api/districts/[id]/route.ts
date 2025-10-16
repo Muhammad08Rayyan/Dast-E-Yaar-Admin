@@ -34,7 +34,6 @@ export async function GET(
 
     return successResponse({ district });
   } catch (error: any) {
-    console.error('Error fetching district:', error);
     return errorResponse(error.message || 'Failed to fetch district');
   }
 }
@@ -90,7 +89,6 @@ export async function PUT(
       'District updated successfully'
     );
   } catch (error: any) {
-    console.error('Error updating district:', error);
     return errorResponse(error.message || 'Failed to update district');
   }
 }
@@ -141,7 +139,6 @@ export async function DELETE(
 
     return successResponse(null, 'District deleted successfully');
   } catch (error: any) {
-    console.error('Error deleting district:', error);
     return errorResponse(error.message || 'Failed to delete district');
   }
 }

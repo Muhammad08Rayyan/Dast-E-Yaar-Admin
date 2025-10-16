@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
         syncedOrders.push(updatedOrder);
         synced++;
       } catch (error) {
-        console.error(`Failed to sync order ${order._id}:`, error);
+
         failed++;
       }
     }
@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
       message: `Synced ${synced} out of ${orders.length} orders`,
     });
   } catch (error: any) {
-    console.error('Error bulk syncing orders:', error);
+
     return errorResponse(error.message || 'Failed to bulk sync orders');
   }
 }

@@ -53,9 +53,7 @@ export async function GET(
       order,
     });
   } catch (error: any) {
-    console.error('Error fetching prescription:', error);
     return errorResponse(error.message || 'Failed to fetch prescription');
   }
 }
-
 

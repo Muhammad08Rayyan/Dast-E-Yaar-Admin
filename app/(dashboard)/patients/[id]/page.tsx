@@ -113,7 +113,7 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
         setData(result.data);
       }
     } catch (error) {
-      console.error("Error fetching patient:", error);
+
     } finally {
       setLoading(false);
     }

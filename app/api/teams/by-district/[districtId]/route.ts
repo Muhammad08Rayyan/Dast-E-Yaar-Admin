@@ -25,7 +25,6 @@ export async function GET(
 
     return successResponse({ teams });
   } catch (error: any) {
-    console.error('Error fetching teams:', error);
     return errorResponse(error.message || 'Failed to fetch teams');
   }
 }

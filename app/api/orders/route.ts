@@ -32,26 +32,20 @@ export async function GET(request: NextRequest) {
 
     // If distributor, filter by their city
     if (authResult.user?.role === 'distributor' && authResult.user?.city_id) {
-      console.log('=== Distributor Filtering ===');
-      console.log('Distributor city_id:', authResult.user.city_id);
 
       // Get the city name from city_id
       const city = await City.findById(authResult.user.city_id);
       if (!city) {
-        console.error('City not found for distributor');
+
         return successResponse({
           orders: [],
           pagination: { page, limit, total: 0, pages: 0 },
         });
       }
 
-      console.log('Distributor city name:', city.name);
-
       // Find all patients with this city
       const patients = await Patient.find({ city: city.name }).select('_id');
       const patientIds = patients.map(p => p._id);
-
-      console.log('Found patients in city:', patientIds.length);
 
       if (patientIds.length === 0) {
         return successResponse({
@@ -66,8 +60,6 @@ export async function GET(request: NextRequest) {
       }).select('_id');
       const prescriptionIds = prescriptions.map(p => p._id);
 
-      console.log('Found prescriptions for those patients:', prescriptionIds.length);
-
       if (prescriptionIds.length === 0) {
         return successResponse({
           orders: [],
@@ -78,7 +70,6 @@ export async function GET(request: NextRequest) {
       // Filter orders by these prescriptions
       query.prescription_id = { $in: prescriptionIds };
 
-      console.log('Filtering orders by prescription_ids');
     }
 
     if (search) {
@@ -119,9 +110,8 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: any) {
-    console.error('Error fetching orders:', error);
+
     return errorResponse(error.message || 'Failed to fetch orders');
   }
 }
-
 

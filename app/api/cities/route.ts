@@ -42,7 +42,6 @@ export async function GET(request: NextRequest) {
       }
     });
   } catch (error) {
-    console.error('Get cities error:', error);
     return NextResponse.json(
       { success: false, error: { message: 'Failed to fetch cities' } },
       { status: 500 }
@@ -60,8 +59,6 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     const body = await request.json();
-    console.log('Admin API - Received body:', body);
-
     const { name, distributor_channel, distributor_name, distributor_email, distributor_phone, distributor_password } = body;
 
     // Validate required fields
@@ -113,7 +110,6 @@ export async function POST(request: NextRequest) {
 
       await newDistributor.save();
       distributorId = newDistributor._id;
-      console.log('Admin API - Created distributor:', distributorId);
     }
 
     // Create city
@@ -133,16 +129,12 @@ export async function POST(request: NextRequest) {
 
     // Populate distributor info before returning
     await newCity.populate('distributor_id', 'name email phone');
-
-    console.log('Admin API - Created city:', newCity);
-
     return NextResponse.json({
       success: true,
       data: newCity,
       message: 'City created successfully'
     }, { status: 201 });
   } catch (error) {
-    console.error('Admin API - Create city error:', error);
     return NextResponse.json(
       { success: false, error: { message: 'Failed to create city', details: String(error) } },
       { status: 500 }

@@ -53,7 +53,6 @@ export async function GET(
 
     return successResponse({ doctor });
   } catch (error: any) {
-    console.error('Error fetching doctor:', error);
     return errorResponse(error.message || 'Failed to fetch doctor');
   }
 }
@@ -163,7 +162,6 @@ export async function PUT(
       'Doctor updated successfully'
     );
   } catch (error: any) {
-    console.error('Error updating doctor:', error);
     return errorResponse(error.message || 'Failed to update doctor');
   }
 }
@@ -202,9 +200,7 @@ export async function DELETE(
 
     return successResponse(null, 'Doctor deleted successfully');
   } catch (error: any) {
-    console.error('Error deleting doctor:', error);
     return errorResponse(error.message || 'Failed to delete doctor');
   }
 }
-
 

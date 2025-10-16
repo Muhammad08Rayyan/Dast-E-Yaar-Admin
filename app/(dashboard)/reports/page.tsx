@@ -101,7 +101,7 @@ export default function ReportsPage() {
         setCurrentUser(data.data);
       }
     } catch (error) {
-      console.error('Error fetching current user:', error);
+
     }
   }, []);
 
@@ -116,7 +116,7 @@ export default function ReportsPage() {
         setTeams(data.data.teams || []);
       }
     } catch (error) {
-      console.error('Error fetching teams:', error);
+
     }
   }, []);
 
@@ -131,7 +131,7 @@ export default function ReportsPage() {
         setDistricts(data.data.districts || []);
       }
     } catch (error) {
-      console.error('Error fetching districts:', error);
+
     }
   }, []);
 
@@ -152,7 +152,7 @@ export default function ReportsPage() {
         setSalesReport(data.data);
       }
     } catch (error) {
-      console.error('Error fetching sales report:', error);
+
     } finally {
       setLoading(false);
     }
@@ -174,7 +174,7 @@ export default function ReportsPage() {
         setTeamPerformance(data.data);
       }
     } catch (error) {
-      console.error('Error fetching team performance:', error);
+
     } finally {
       setLoading(false);
     }

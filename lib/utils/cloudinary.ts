@@ -31,7 +31,7 @@ export async function uploadToCloudinary(
         folder,
         resource_type: 'image',
         transformation: [
-          { width: 1200, height: 675, crop: 'limit' }, // Max 1200x675 (16:9 aspect ratio)
+          { width: 1200, height: 450, crop: 'limit' }, // Max 1200x450 (8:3 aspect ratio) - optimized for mobile banner display
           { quality: 'auto' },
           { fetch_format: 'auto' },
         ],
@@ -67,7 +67,7 @@ export async function deleteFromCloudinary(publicId: string): Promise<any> {
     const result = await cloudinary.uploader.destroy(publicId);
     return result;
   } catch (error) {
-    console.error('Error deleting from Cloudinary:', error);
+
     throw error;
   }
 }

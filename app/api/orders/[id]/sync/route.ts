@@ -142,8 +142,7 @@ export async function POST(
         message: 'Order status synced successfully from Shopify',
       });
     } catch (shopifyError: any) {
-      console.error('Shopify API error:', shopifyError);
-      
+
       // Return current order data if Shopify sync fails
       const currentOrder = await Order.findById(id)
         .populate({
@@ -164,7 +163,7 @@ export async function POST(
       });
     }
   } catch (error: any) {
-    console.error('Error syncing order:', error);
+
     return errorResponse(error.message || 'Failed to sync order');
   }
 }

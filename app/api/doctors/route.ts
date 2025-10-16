@@ -80,7 +80,6 @@ export async function GET(request: NextRequest) {
       }
     });
   } catch (error: any) {
-    console.error('Error fetching doctors:', error);
     return errorResponse(error.message || 'Failed to fetch doctors');
   }
 }
@@ -170,7 +169,6 @@ export async function POST(request: NextRequest) {
       201
     );
   } catch (error: any) {
-    console.error('Error creating doctor:', error);
     return errorResponse(error.message || 'Failed to create doctor');
   }
 }

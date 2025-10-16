@@ -63,7 +63,7 @@ export default function DoctorDetailPage({ params }: { params: { id: string } })
         setCurrentUserRole(data.data.role || '');
       }
     } catch (error) {
-      console.error('Error fetching current user:', error);
+
     }
   }, []);
 
@@ -78,7 +78,7 @@ export default function DoctorDetailPage({ params }: { params: { id: string } })
         setDoctor(data.data.doctor);
       }
     } catch (error) {
-      console.error('Error fetching doctor:', error);
+
     } finally {
       setLoading(false);
     }
@@ -96,7 +96,7 @@ export default function DoctorDetailPage({ params }: { params: { id: string } })
         setRecentPrescriptions(data.data.recent_prescriptions);
       }
     } catch (error) {
-      console.error('Error fetching stats:', error);
+
     }
   }, [params.id]);
 

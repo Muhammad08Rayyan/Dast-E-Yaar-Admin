@@ -47,7 +47,6 @@ export async function PATCH(
       `District ${status === 'active' ? 'activated' : 'deactivated'} successfully`
     );
   } catch (error: any) {
-    console.error('Error updating district status:', error);
     return errorResponse(error.message || 'Failed to update district status');
   }
 }

@@ -36,7 +36,6 @@ export async function GET(
 
     return successResponse({ user });
   } catch (error: any) {
-    console.error('Error fetching user:', error);
     return errorResponse(error.message || 'Failed to fetch user');
   }
 }
@@ -158,7 +157,6 @@ export async function PUT(
 
     return successResponse({ user: updatedUser }, 'User updated successfully');
   } catch (error: any) {
-    console.error('Error updating user:', error);
     return errorResponse(error.message || 'Failed to update user');
   }
 }
@@ -189,7 +187,6 @@ export async function DELETE(
 
     return successResponse(null, 'User deleted successfully');
   } catch (error: any) {
-    console.error('Error deleting user:', error);
     return errorResponse(error.message || 'Failed to delete user');
   }
 }

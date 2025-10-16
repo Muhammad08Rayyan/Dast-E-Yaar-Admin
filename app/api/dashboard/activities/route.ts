@@ -58,7 +58,6 @@ export async function GET(req: NextRequest) {
       { status: 200 }
     );
   } catch (error: any) {
-    console.error('Dashboard activities error:', error);
     return NextResponse.json(
       apiResponse(false, 'Failed to fetch dashboard activities', null, {
         code: 'INTERNAL_ERROR',

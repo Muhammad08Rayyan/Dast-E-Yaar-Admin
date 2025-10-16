@@ -33,7 +33,6 @@ export async function GET(
 
     return successResponse({ banner });
   } catch (error: any) {
-    console.error('Error fetching banner:', error);
     return errorResponse(error.message || 'Failed to fetch banner', 500);
   }
 }
@@ -95,7 +94,6 @@ export async function PUT(
         try {
           await deleteFromCloudinary(banner.cloudinary_id);
         } catch (error) {
-          console.error('Error deleting old image from Cloudinary:', error);
           // Continue even if deletion fails
         }
       }
@@ -114,7 +112,6 @@ export async function PUT(
       'Banner updated successfully'
     );
   } catch (error: any) {
-    console.error('Error updating banner:', error);
     return errorResponse(error.message || 'Failed to update banner', 500);
   }
 }
@@ -149,7 +146,6 @@ export async function DELETE(
       try {
         await deleteFromCloudinary(banner.cloudinary_id);
       } catch (error) {
-        console.error('Error deleting image from Cloudinary:', error);
         // Continue even if deletion fails
       }
     }
@@ -164,7 +160,6 @@ export async function DELETE(
       'Banner deleted successfully'
     );
   } catch (error: any) {
-    console.error('Error deleting banner:', error);
     return errorResponse(error.message || 'Failed to delete banner', 500);
   }
 }

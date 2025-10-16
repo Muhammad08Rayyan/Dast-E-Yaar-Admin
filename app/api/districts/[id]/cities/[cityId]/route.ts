@@ -69,7 +69,7 @@ export async function PUT(
       'City updated successfully'
     );
   } catch (error: any) {
-    console.error('Error updating city:', error);
+
     return errorResponse(error.message || 'Failed to update city');
   }
 }
@@ -108,7 +108,7 @@ export async function DELETE(
       'City deleted successfully'
     );
   } catch (error: any) {
-    console.error('Error deleting city:', error);
+
     return errorResponse(error.message || 'Failed to delete city');
   }
 }

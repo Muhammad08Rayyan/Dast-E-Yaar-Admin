@@ -50,7 +50,6 @@ export async function GET(request: NextRequest) {
       }
     });
   } catch (error: any) {
-    console.error('Error fetching districts:', error);
     return errorResponse(error.message || 'Failed to fetch districts');
   }
 }
@@ -92,7 +91,6 @@ export async function POST(request: NextRequest) {
       201
     );
   } catch (error: any) {
-    console.error('Error creating district:', error);
     return errorResponse(error.message || 'Failed to create district');
   }
 }

@@ -37,7 +37,6 @@ export async function GET(request: NextRequest) {
 
     return successResponse({ districtProducts: transformedProducts });
   } catch (error: any) {
-    console.error('Error fetching district products:', error);
     return errorResponse(error.message || 'Failed to fetch district products');
   }
 }

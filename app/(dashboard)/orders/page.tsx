@@ -126,7 +126,7 @@ export default function OrdersPage() {
         }
       }
     } catch (error) {
-      console.error("Error fetching orders:", error);
+
     } finally {
       setLoading(false);
     }
@@ -175,7 +175,7 @@ export default function OrdersPage() {
         }));
       }
     } catch (error) {
-      console.error("Error syncing orders:", error);
+
       // Silently fail - user still sees cached data
     }
   };

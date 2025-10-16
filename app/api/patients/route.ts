@@ -56,9 +56,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: any) {
-    console.error('Error fetching patients:', error);
     return errorResponse(error.message || 'Failed to fetch patients');
   }
 }
-
 

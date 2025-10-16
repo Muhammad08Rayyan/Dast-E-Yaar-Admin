@@ -110,7 +110,6 @@ export async function GET(request: NextRequest) {
       }
     });
   } catch (error: any) {
-    console.error('Error generating team performance report:', error);
     return errorResponse(error.message || 'Failed to generate team performance report');
   }
 }

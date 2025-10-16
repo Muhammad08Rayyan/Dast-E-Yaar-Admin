@@ -80,7 +80,6 @@ export async function GET(
       recent_prescriptions: recentPrescriptions
     });
   } catch (error: any) {
-    console.error('Error fetching doctor stats:', error);
     return errorResponse(error.message || 'Failed to fetch doctor statistics');
   }
 }

@@ -69,7 +69,6 @@ export default function DistributorsPage() {
         setDistributors(data.data.distributors || []);
       }
     } catch (error) {
-      console.error('Error fetching distributors:', error);
     } finally {
       setLoading(false);
     }
@@ -139,7 +138,6 @@ export default function DistributorsPage() {
         alert(data.message || 'Operation failed');
       }
     } catch (error) {
-      console.error('Error:', error);
       alert('Operation failed');
     } finally {
       setSubmitting(false);
@@ -164,7 +162,6 @@ export default function DistributorsPage() {
         alert(data.message || 'Delete failed');
       }
     } catch (error) {
-      console.error('Error deleting distributor:', error);
       alert('Delete failed');
     }
   };
@@ -188,7 +185,6 @@ export default function DistributorsPage() {
         fetchDistributors();
       }
     } catch (error) {
-      console.error('Error updating status:', error);
     }
   };
 

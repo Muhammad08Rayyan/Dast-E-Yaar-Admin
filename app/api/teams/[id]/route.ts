@@ -45,7 +45,6 @@ export async function GET(
 
     return successResponse({ team: teamData });
   } catch (error: any) {
-    console.error('Error fetching team:', error);
     return errorResponse(error.message || 'Failed to fetch team');
   }
 }
@@ -86,7 +85,6 @@ export async function PUT(
       'Team updated successfully'
     );
   } catch (error: any) {
-    console.error('Error updating team:', error);
     return errorResponse(error.message || 'Failed to update team');
   }
 }
@@ -123,7 +121,6 @@ export async function DELETE(
 
     return successResponse(null, 'Team deleted successfully');
   } catch (error: any) {
-    console.error('Error deleting team:', error);
     return errorResponse(error.message || 'Failed to delete team');
   }
 }

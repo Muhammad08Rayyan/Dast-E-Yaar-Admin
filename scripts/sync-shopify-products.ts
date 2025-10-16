@@ -22,9 +22,6 @@ async function fetchShopifyProducts(): Promise<ShopifyProduct[]> {
   if (!SHOPIFY_STORE_URL || !SHOPIFY_ACCESS_TOKEN) {
     throw new Error('Shopify credentials not configured. Please set SHOPIFY_STORE_URL and SHOPIFY_ACCESS_TOKEN in .env.local');
   }
-
-  console.log(`\n🔄 Fetching products from Shopify store: ${SHOPIFY_STORE_URL}...`);
-
   const products: ShopifyProduct[] = [];
   let hasNextPage = true;
   let cursor = null;
@@ -32,8 +29,6 @@ async function fetchShopifyProducts(): Promise<ShopifyProduct[]> {
 
   while (hasNextPage) {
     pageCount++;
-    console.log(`   📄 Fetching page ${pageCount}...`);
-
     const query = `
       query getProducts($cursor: String) {
         products(first: 50, after: $cursor) {
@@ -86,8 +81,6 @@ async function fetchShopifyProducts(): Promise<ShopifyProduct[]> {
       }
 
       const edges: any[] = data.data.products.edges;
-      console.log(`   ✓ Found ${edges.length} products on this page`);
-
       for (const edge of edges) {
         const product: any = edge.node;
         products.push({
@@ -106,12 +99,9 @@ async function fetchShopifyProducts(): Promise<ShopifyProduct[]> {
 
       hasNextPage = data.data.products.pageInfo.hasNextPage;
     } catch (error: any) {
-      console.error(`\n❌ Error fetching from Shopify:`, error.message);
       throw error;
     }
   }
-
-  console.log(`\n✓ Total products fetched from Shopify: ${products.length}`);
   return products;
 }
 
@@ -119,18 +109,11 @@ async function connectDB() {
   if (!MONGODB_URI) {
     throw new Error('MONGODB_URI not configured. Please set it in .env.local');
   }
-
-  console.log('\n🔌 Connecting to MongoDB...');
   await mongoose.connect(MONGODB_URI);
-  console.log('✓ Connected to MongoDB');
 }
 
 async function syncProducts() {
   try {
-    console.log('\n╔════════════════════════════════════════╗');
-    console.log('║   Shopify Product Sync - Manual Run   ║');
-    console.log('╚════════════════════════════════════════╝');
-
     // Connect to database
     await connectDB();
 
@@ -141,9 +124,6 @@ async function syncProducts() {
     let updatedCount = 0;
     let skippedCount = 0;
     const errors: string[] = [];
-
-    console.log('\n📦 Processing products...\n');
-
     // Process each product
     for (const shopifyProduct of shopifyProducts) {
       // Process each variant as a separate product
@@ -170,7 +150,6 @@ async function syncProducts() {
             existingProduct.status = shopifyProduct.status === 'ACTIVE' ? 'active' : 'inactive';
             await existingProduct.save();
             updatedCount++;
-            console.log(`   ✓ Updated: ${productName} (SKU: ${sku})`);
           } else {
             // Create new product
             await Product.create({
@@ -182,38 +161,22 @@ async function syncProducts() {
               status: shopifyProduct.status === 'ACTIVE' ? 'active' : 'inactive',
             });
             addedCount++;
-            console.log(`   ✓ Added: ${productName} (SKU: ${sku})`);
           }
         } catch (err: any) {
           const errorMsg = `Error processing ${shopifyProduct.title}: ${err.message}`;
           errors.push(errorMsg);
           skippedCount++;
-          console.log(`   ✗ ${errorMsg}`);
         }
       }
     }
-
-    console.log('\n╔════════════════════════════════════════╗');
-    console.log('║            Sync Complete!              ║');
-    console.log('╚════════════════════════════════════════╝\n');
-    console.log(`📊 Results:`);
-    console.log(`   ✓ Products Added:   ${addedCount}`);
-    console.log(`   ✓ Products Updated: ${updatedCount}`);
-    console.log(`   ✗ Skipped/Errors:   ${skippedCount}`);
-    console.log(`   📦 Total Processed: ${addedCount + updatedCount}`);
-
     if (errors.length > 0) {
-      console.log(`\n⚠️  Errors encountered:`);
-      errors.forEach(err => console.log(`   - ${err}`));
+      errors.forEach(err => 
     }
 
     await mongoose.disconnect();
-    console.log('\n✓ Disconnected from MongoDB\n');
     process.exit(0);
   } catch (error: any) {
-    console.error('\n❌ Fatal error:', error.message);
     if (error.stack) {
-      console.error('\nStack trace:', error.stack);
     }
     await mongoose.disconnect();
     process.exit(1);

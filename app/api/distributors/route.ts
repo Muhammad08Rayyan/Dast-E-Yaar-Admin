@@ -53,7 +53,6 @@ export async function GET(request: NextRequest) {
       }
     });
   } catch (error: any) {
-    console.error('Error fetching distributors:', error);
     return errorResponse(error.message || 'Failed to fetch distributors');
   }
 }
@@ -104,7 +103,6 @@ export async function POST(request: NextRequest) {
       201
     );
   } catch (error: any) {
-    console.error('Error creating distributor:', error);
     return errorResponse(error.message || 'Failed to create distributor');
   }
 }

@@ -29,7 +29,6 @@ export async function GET(request: NextRequest) {
 
     return successResponse({ cities: allCities });
   } catch (error: any) {
-    console.error('Error fetching all cities:', error);
     return errorResponse(error.message || 'Failed to fetch cities');
   }
 }

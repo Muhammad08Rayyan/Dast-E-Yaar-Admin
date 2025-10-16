@@ -47,7 +47,7 @@ export async function GET(
       assignedCities
     });
   } catch (error: any) {
-    console.error('Error fetching distributor:', error);
+
     return errorResponse(error.message || 'Failed to fetch distributor');
   }
 }
@@ -94,7 +94,7 @@ export async function PUT(
       'Distributor updated successfully'
     );
   } catch (error: any) {
-    console.error('Error updating distributor:', error);
+
     return errorResponse(error.message || 'Failed to update distributor');
   }
 }
@@ -135,7 +135,7 @@ export async function DELETE(
       'Distributor deleted successfully'
     );
   } catch (error: any) {
-    console.error('Error deleting distributor:', error);
+
     return errorResponse(error.message || 'Failed to delete distributor');
   }
 }

@@ -67,7 +67,6 @@ export async function POST(request: NextRequest) {
       message: 'Login successful',
     });
   } catch (error) {
-    console.error('Distributor login error:', error);
     return NextResponse.json(
       { success: false, error: { message: 'An error occurred during login' } },
       { status: 500 }

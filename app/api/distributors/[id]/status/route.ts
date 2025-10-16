@@ -41,7 +41,7 @@ export async function PATCH(
       `Distributor ${status === 'active' ? 'activated' : 'deactivated'} successfully`
     );
   } catch (error: any) {
-    console.error('Error updating distributor status:', error);
+
     return errorResponse(error.message || 'Failed to update distributor status');
   }
 }

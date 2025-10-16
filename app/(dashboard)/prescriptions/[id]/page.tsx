@@ -90,7 +90,7 @@ export default function PrescriptionDetailPage({ params }: { params: { id: strin
         setOrder(data.data.order);
       }
     } catch (error) {
-      console.error("Error fetching prescription:", error);
+
     } finally {
       setLoading(false);
     }
@@ -114,7 +114,6 @@ export default function PrescriptionDetailPage({ params }: { params: { id: strin
     };
     return colors[status] || "bg-gray-100 text-black";
   };
-
 
   if (loading) {
     return (

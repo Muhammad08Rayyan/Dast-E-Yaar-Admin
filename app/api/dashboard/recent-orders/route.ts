@@ -54,7 +54,6 @@ export async function GET(req: NextRequest) {
       { status: 200 }
     );
   } catch (error: any) {
-    console.error('Dashboard recent orders error:', error);
     return NextResponse.json(
       apiResponse(false, 'Failed to fetch recent orders', null, {
         code: 'INTERNAL_ERROR',

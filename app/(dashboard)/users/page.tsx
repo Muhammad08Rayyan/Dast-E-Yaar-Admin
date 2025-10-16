@@ -86,11 +86,9 @@ export default function KAMsPage() {
       if (data.success) {
         setUsers(data.data.users || []);
       } else {
-        console.error('Failed to fetch users:', data);
         setUsers([]);
       }
     } catch (error) {
-      console.error('Error fetching KAMs:', error);
       setUsers([]);
     } finally {
       setLoading(false);
@@ -108,7 +106,6 @@ export default function KAMsPage() {
         setDistricts(data.data.districts);
       }
     } catch (error) {
-      console.error('Error fetching districts:', error);
     }
   }, []);
 
@@ -123,7 +120,6 @@ export default function KAMsPage() {
         setTeams(data.data.teams);
       }
     } catch (error) {
-      console.error('Error fetching teams:', error);
     }
   }, []);
 
@@ -205,7 +201,6 @@ export default function KAMsPage() {
         alert(data.error?.message || 'Failed to save KAM');
       }
     } catch (error) {
-      console.error('Error saving KAM:', error);
       alert('Failed to save KAM');
     } finally {
       setSubmitting(false);
@@ -231,7 +226,6 @@ export default function KAMsPage() {
         alert(data.error?.message || 'Failed to delete KAM');
       }
     } catch (error) {
-      console.error('Error deleting KAM:', error);
       alert('Failed to delete KAM');
     } finally {
       setSubmitting(false);
@@ -256,7 +250,7 @@ export default function KAMsPage() {
   //       fetchUsers();
   //     }
   //   } catch (error) {
-  //     console.error('Error toggling status:', error);
+  //     
   //   }
   // };
 

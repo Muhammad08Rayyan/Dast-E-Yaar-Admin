@@ -64,7 +64,6 @@ export default function DistrictsPage() {
         setCurrentUser(data.data);
       }
     } catch (error) {
-      console.error('Error fetching current user:', error);
     }
   }, []);
 
@@ -83,11 +82,9 @@ export default function DistrictsPage() {
       if (data.success) {
         setDistricts(data.data.districts || []);
       } else {
-        console.error('Failed to fetch districts:', data);
         setDistricts([]);
       }
     } catch (error) {
-      console.error('Error fetching districts:', error);
       setDistricts([]);
     } finally {
       setLoading(false);
@@ -160,7 +157,6 @@ export default function DistrictsPage() {
         alert(data.error?.message || 'Failed to save district');
       }
     } catch (error) {
-      console.error('Error saving district:', error);
       alert('Failed to save district');
     } finally {
       setSubmitting(false);
@@ -186,7 +182,6 @@ export default function DistrictsPage() {
         alert(data.error?.message || 'Failed to delete district');
       }
     } catch (error) {
-      console.error('Error deleting district:', error);
       alert('Failed to delete district');
     } finally {
       setSubmitting(false);

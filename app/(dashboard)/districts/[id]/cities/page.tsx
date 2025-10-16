@@ -83,7 +83,6 @@ export default function DistrictCitiesPage({ params }: { params: { id: string } 
         setCities(data.data.cities || []);
       }
     } catch (error) {
-      console.error('Error fetching cities:', error);
     } finally {
       setLoading(false);
     }
@@ -100,7 +99,6 @@ export default function DistrictCitiesPage({ params }: { params: { id: string } 
         setDistributors(data.data.distributors || []);
       }
     } catch (error) {
-      console.error('Error fetching distributors:', error);
     }
   }, []);
 
@@ -170,7 +168,6 @@ export default function DistrictCitiesPage({ params }: { params: { id: string } 
         alert(data.message || 'Operation failed');
       }
     } catch (error) {
-      console.error('Error:', error);
       alert('Operation failed');
     } finally {
       setSubmitting(false);
@@ -198,7 +195,6 @@ export default function DistrictCitiesPage({ params }: { params: { id: string } 
         alert(data.message || 'Delete failed');
       }
     } catch (error) {
-      console.error('Error deleting city:', error);
       alert('Delete failed');
     }
   };

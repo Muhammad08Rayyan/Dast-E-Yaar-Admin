@@ -50,7 +50,6 @@ export async function GET(
       assignedCount: assignedProductIds.length,
     });
   } catch (error: any) {
-    console.error('Error fetching team products:', error);
     return errorResponse(error.message || 'Failed to fetch team products', 500);
   }
 }
@@ -100,7 +99,6 @@ export async function POST(
       'Products updated successfully'
     );
   } catch (error: any) {
-    console.error('Error assigning products to team:', error);
     return errorResponse(
       error.message || 'Failed to assign products to team',
       500

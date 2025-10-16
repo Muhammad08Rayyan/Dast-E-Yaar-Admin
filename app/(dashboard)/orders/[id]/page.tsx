@@ -105,7 +105,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
         setOrder(data.data.order);
       }
     } catch (error) {
-      console.error("Error fetching order:", error);
+
     } finally {
       setLoading(false);
     }
@@ -128,7 +128,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
         setOrder(data.data.order);
       }
     } catch (error) {
-      console.error("Error syncing order:", error);
+
       // Silently fail - don't alert user as we still have cached data
     } finally {
       setSyncing(false);
@@ -215,7 +215,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
         alert(data.message || 'Failed to update order status');
       }
     } catch (error) {
-      console.error("Error updating order status:", error);
+
       alert('Failed to update order status');
     } finally {
       setUpdating(false);

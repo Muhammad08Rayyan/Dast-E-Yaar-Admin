@@ -36,7 +36,7 @@ export async function GET(
 
     return NextResponse.json({ success: true, data: city });
   } catch (error) {
-    console.error('Get city error:', error);
+
     return NextResponse.json(
       { success: false, error: { message: 'Failed to fetch city' } },
       { status: 500 }
@@ -107,7 +107,7 @@ export async function PUT(
       message: 'City updated successfully'
     });
   } catch (error) {
-    console.error('Update city error:', error);
+
     return NextResponse.json(
       { success: false, error: { message: 'Failed to update city' } },
       { status: 500 }
@@ -157,7 +157,7 @@ export async function DELETE(
       message: 'City deleted successfully'
     });
   } catch (error) {
-    console.error('Delete city error:', error);
+
     return NextResponse.json(
       { success: false, error: { message: 'Failed to delete city' } },
       { status: 500 }

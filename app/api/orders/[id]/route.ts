@@ -52,7 +52,6 @@ export async function GET(
 
     return successResponse({ order });
   } catch (error: any) {
-    console.error('Error fetching order:', error);
     return errorResponse(error.message || 'Failed to fetch order');
   }
 }
@@ -137,9 +136,7 @@ export async function PUT(
       message: 'Order status updated successfully'
     });
   } catch (error: any) {
-    console.error('Error updating order:', error);
     return errorResponse(error.message || 'Failed to update order');
   }
 }
-
 

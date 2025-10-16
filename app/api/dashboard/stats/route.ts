@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
       { status: 200 }
     );
   } catch (error: any) {
-    console.error('Dashboard stats error:', error);
+
     return NextResponse.json(
       apiResponse(false, 'Failed to fetch dashboard statistics', null, {
         code: 'INTERNAL_ERROR',

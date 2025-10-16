@@ -49,7 +49,6 @@ export async function PATCH(
       `User ${status === 'active' ? 'activated' : 'deactivated'} successfully`
     );
   } catch (error: any) {
-    console.error('Error updating user status:', error);
     return errorResponse(error.message || 'Failed to update user status');
   }
 }

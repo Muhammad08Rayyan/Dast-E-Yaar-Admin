@@ -80,7 +80,6 @@ export async function GET(request: NextRequest) {
       }
     });
   } catch (error: any) {
-    console.error('Error fetching teams:', error);
     return errorResponse(error.message || 'Failed to fetch teams');
   }
 }
@@ -116,7 +115,6 @@ export async function POST(request: NextRequest) {
       201
     );
   } catch (error: any) {
-    console.error('Error creating team:', error);
     return errorResponse(error.message || 'Failed to create team');
   }
 }

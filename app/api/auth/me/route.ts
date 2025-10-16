@@ -25,7 +25,6 @@ async function handler(req: NextRequest & { user?: any }) {
       status: user.status,
     });
   } catch (error: any) {
-    console.error('Get user error:', error);
     return errorResponse('An error occurred', 500);
   }
 }

@@ -55,7 +55,7 @@ export default function BannersPage() {
         setBanners(data.data.banners);
       }
     } catch (error) {
-      console.error('Error fetching banners:', error);
+
     } finally {
       setLoading(false);
     }
@@ -182,7 +182,7 @@ export default function BannersPage() {
         alert(data.error?.message || 'Failed to save banner');
       }
     } catch (error) {
-      console.error('Error saving banner:', error);
+
       alert('Failed to save banner');
     } finally {
       setSubmitting(false);
@@ -208,7 +208,7 @@ export default function BannersPage() {
         alert(data.error?.message || 'Failed to delete banner');
       }
     } catch (error) {
-      console.error('Error deleting banner:', error);
+
       alert('Failed to delete banner');
     } finally {
       setSubmitting(false);
@@ -235,7 +235,7 @@ export default function BannersPage() {
         fetchBanners();
       }
     } catch (error) {
-      console.error('Error toggling banner status:', error);
+
     }
   };
 
@@ -409,7 +409,7 @@ export default function BannersPage() {
                       cursor-pointer"
                   />
                   <p className="text-sm text-black mt-1">
-                    Recommended: 1200x675px (16:9 aspect ratio), Max 5MB
+                    Recommended: 1200x450px (8:3 aspect ratio), Max 5MB
                   </p>
                   {formErrors.image && <p className="text-red-500 text-sm mt-1">{formErrors.image}</p>}
                 </div>

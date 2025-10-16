@@ -26,7 +26,6 @@ export async function GET(request: NextRequest) {
       total: banners.length,
     });
   } catch (error: any) {
-    console.error('Error fetching banners:', error);
     return errorResponse(error.message || 'Failed to fetch banners', 500);
   }
 }
@@ -86,7 +85,6 @@ export async function POST(request: NextRequest) {
       201
     );
   } catch (error: any) {
-    console.error('Error creating banner:', error);
     return errorResponse(error.message || 'Failed to create banner', 500);
   }
 }

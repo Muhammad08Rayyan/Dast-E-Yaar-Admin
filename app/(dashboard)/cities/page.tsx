@@ -77,7 +77,7 @@ export default function CitiesPage() {
         setCities(data.data.cities || []);
       }
     } catch (error) {
-      console.error('Error fetching cities:', error);
+
     } finally {
       setLoading(false);
     }
@@ -163,7 +163,6 @@ export default function CitiesPage() {
         payload.distributor_password = formData.distributor_password;
       }
 
-      console.log('Sending payload:', payload);
       const response = await fetch('/api/cities', {
         method: 'POST',
         headers: {
@@ -173,19 +172,17 @@ export default function CitiesPage() {
         body: JSON.stringify(payload),
       });
 
-      console.log('Response status:', response.status);
       const data = await response.json();
-      console.log('Response data:', data);
 
       if (data.success) {
         setIsCreateOpen(false);
         fetchCities();
       } else {
-        console.error('Create city error:', data);
+
         setFormErrors({ submit: data.error?.message || 'Failed to create city' });
       }
     } catch (error) {
-      console.error('Create city exception:', error);
+
       setFormErrors({ submit: 'Failed to create city' });
     } finally {
       setSubmitting(false);

@@ -66,7 +66,6 @@ export async function PATCH(
       `Doctor ${status === 'active' ? 'activated' : 'deactivated'} successfully`
     );
   } catch (error: any) {
-    console.error('Error updating doctor status:', error);
     return errorResponse(error.message || 'Failed to update doctor status');
   }
 }

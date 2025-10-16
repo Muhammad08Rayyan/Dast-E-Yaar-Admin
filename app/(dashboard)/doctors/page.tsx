@@ -92,7 +92,6 @@ export default function DoctorsPage() {
         setCurrentUserRole(data.data.role || '');
       }
     } catch (error) {
-      console.error('Error fetching current user:', error);
     }
   }, []);
 
@@ -107,7 +106,6 @@ export default function DoctorsPage() {
         setTeams(data.data.teams || []);
       }
     } catch (error) {
-      console.error('Error fetching teams:', error);
     }
   }, []);
 
@@ -122,7 +120,6 @@ export default function DoctorsPage() {
         setDistricts(data.data.districts || []);
       }
     } catch (error) {
-      console.error('Error fetching districts:', error);
     }
   }, []);
 
@@ -133,25 +130,17 @@ export default function DoctorsPage() {
       if (search) params.append('search', search);
       if (specialtyFilter) params.append('specialty', specialtyFilter);
       params.append('limit', '100'); // Get more doctors
-
-      console.log('Fetching doctors with params:', params.toString());
       const response = await fetch(`/api/doctors?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('Doctors API response status:', response.status);
       const data = await response.json();
-      console.log('Doctors API response data:', data);
-      
       if (data.success) {
-        console.log('Setting doctors:', data.data.doctors?.length || 0, 'doctors');
         setDoctors(data.data.doctors || []);
       } else {
-        console.error('Failed to fetch doctors:', data);
         alert(`Failed to load doctors: ${data.error?.message || data.message || 'Unknown error'}`);
         setDoctors([]);
       }
     } catch (error) {
-      console.error('Error fetching doctors:', error);
       alert(`Error loading doctors: ${error}`);
       setDoctors([]);
     } finally {
@@ -244,7 +233,6 @@ export default function DoctorsPage() {
         alert(data.error?.message || 'Failed to save doctor');
       }
     } catch (error) {
-      console.error('Error saving doctor:', error);
       alert('Failed to save doctor');
     } finally {
       setSubmitting(false);
@@ -270,7 +258,6 @@ export default function DoctorsPage() {
         alert(data.error?.message || 'Failed to delete doctor');
       }
     } catch (error) {
-      console.error('Error deleting doctor:', error);
       alert('Failed to delete doctor');
     } finally {
       setSubmitting(false);
@@ -295,7 +282,6 @@ export default function DoctorsPage() {
         fetchDoctors();
       }
     } catch (error) {
-      console.error('Error toggling status:', error);
     }
   };
 

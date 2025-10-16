@@ -26,10 +26,7 @@ const User = mongoose.models.User || mongoose.model('User', UserSchema);
 
 async function seedSuperAdmin() {
   try {
-    console.log('Connecting to MongoDB...');
     await mongoose.connect(MONGODB_URI);
-    console.log('Connected to MongoDB');
-
     const superAdminEmail = 'admin@dasteyaar.com';
     const superAdminPassword = 'AtCCL@789';
 
@@ -37,8 +34,6 @@ async function seedSuperAdmin() {
     const existingAdmin = await User.findOne({ email: superAdminEmail });
 
     if (existingAdmin) {
-      console.log('Super Admin already exists. Updating password...');
-      
       // Hash the password
       const hashedPassword = await bcrypt.hash(superAdminPassword, 10);
       
@@ -53,11 +48,7 @@ async function seedSuperAdmin() {
           status: 'active'
         }
       );
-      
-      console.log('✅ Super Admin updated successfully!');
     } else {
-      console.log('Creating Super Admin...');
-      
       // Hash the password
       const hashedPassword = await bcrypt.hash(superAdminPassword, 10);
       
@@ -70,19 +61,10 @@ async function seedSuperAdmin() {
         assigned_districts: [],
         status: 'active'
       });
-      
-      console.log('✅ Super Admin created successfully!');
     }
-
-    console.log('\nSuper Admin Credentials:');
-    console.log('Email:', superAdminEmail);
-    console.log('Password:', superAdminPassword);
-
     await mongoose.disconnect();
-    console.log('\nDisconnected from MongoDB');
     process.exit(0);
   } catch (error) {
-    console.error('Error seeding super admin:', error);
     process.exit(1);
   }
 }

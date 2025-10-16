@@ -45,7 +45,6 @@ function walk(dir) {
           const matches = content.match(regex);
           if (matches) changedOccurrences += matches.length;
         });
-        console.log('Updated:', path.relative(process.cwd(), full));
       }
     }
   }
@@ -53,8 +52,4 @@ function walk(dir) {
 
 for (const dir of TARGET_DIRS) {
   if (fs.existsSync(dir)) walk(dir);
-}
-
-console.log(`Done. Files changed: ${changedFiles}, occurrences replaced: ${changedOccurrences}`);
-
-
+}

@@ -88,7 +88,7 @@ export default function PatientsPage() {
         });
       }
     } catch (error) {
-      console.error("Error fetching patients:", error);
+
     } finally {
       setLoading(false);
     }

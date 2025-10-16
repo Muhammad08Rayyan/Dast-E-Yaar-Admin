@@ -58,7 +58,6 @@ export async function GET(request: NextRequest) {
       }
     });
   } catch (error: any) {
-    console.error('Error fetching users:', error);
     return errorResponse(error.message || 'Failed to fetch users');
   }
 }
@@ -162,7 +161,6 @@ export async function POST(request: NextRequest) {
       201
     );
   } catch (error: any) {
-    console.error('Error creating user:', error);
     return errorResponse(error.message || 'Failed to create user');
   }
 }

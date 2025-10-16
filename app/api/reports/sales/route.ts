@@ -19,9 +19,6 @@ export async function GET(request: NextRequest) {
     const dateTo = searchParams.get('dateTo') || '';
     const teamId = searchParams.get('teamId') || '';
     const districtId = searchParams.get('districtId') || '';
-
-    console.log('Sales Report Filters:', { dateFrom, dateTo, teamId, districtId });
-
     // Build date filter
     const dateFilter: any = {};
     if (dateFrom) {
@@ -32,9 +29,6 @@ export async function GET(request: NextRequest) {
       endDate.setHours(23, 59, 59, 999);
       dateFilter.$lte = endDate;
     }
-    
-    console.log('Date filter object:', dateFilter);
-
     // Role-based filtering
     const doctorQuery: any = { status: 'active' };
 
@@ -83,16 +77,10 @@ export async function GET(request: NextRequest) {
       // Use createdAt as that's what's actually in the DB
       prescriptionQuery.createdAt = dateFilter;
     }
-
-    console.log('Prescription query:', prescriptionQuery);
-
     // Get prescriptions
     const prescriptions = await Prescription.find(prescriptionQuery)
       .populate('doctor_id', 'name specialty')
       .populate('patient_id', 'name mrn');
-    
-    console.log('Found prescriptions:', prescriptions.length);
-
     const prescriptionIds = prescriptions.map(p => p._id);
 
     // Build order query
@@ -197,7 +185,6 @@ export async function GET(request: NextRequest) {
       }
     });
   } catch (error: any) {
-    console.error('Error generating sales report:', error);
     return errorResponse(error.message || 'Failed to generate sales report');
   }
 }
