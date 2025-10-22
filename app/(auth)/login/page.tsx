@@ -110,11 +110,6 @@ export default function LoginPage() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Signing in..." : "Sign In"}
             </Button>
-
-            <div className="mt-4 p-3 bg-gray-50 rounded-md text-xs text-gray-600">
-              <p className="font-semibold mb-1">Demo Credentials:</p>
-              <p>Super Admin: superadmin@dasteyaar.com / Super@Admin123</p>
-            </div>
           </form>
         </CardContent>
       </Card>
